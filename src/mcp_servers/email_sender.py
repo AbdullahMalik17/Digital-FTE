@@ -159,7 +159,7 @@ To approve, move this file to `Vault/Approved/`.
         with open(filepath, "w") as f:
             f.write(content)
             
-        log_audit(to, subject, "PENDING_APPROVAL", details=f"Saved to {filename}")
+        log_audit(to, subject, "PENDING_APPROVAL", message_id=f"pending:{filename}")
         return f"Email queued for approval at {filepath}"
 
     # Check limits
