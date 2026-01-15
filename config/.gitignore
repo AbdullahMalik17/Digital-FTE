@@ -1,0 +1,13 @@
+# Sensitive files - NEVER commit these
+credentials.json
+token.json
+.env
+*.key
+*.pem
+
+# Processed data
+processed_emails.json
+hook_state.json
+
+# Local state
+current_prompt.txt
