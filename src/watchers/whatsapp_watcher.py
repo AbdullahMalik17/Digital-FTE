@@ -194,13 +194,19 @@ class WhatsAppWatcher:
         """Start the browser and navigate to WhatsApp Web."""
         logger.info("Starting WhatsApp Watcher...")
 
-        playwright = await async_playwright().start()
+        self.playwright = await async_playwright().start()
 
         # Use persistent context to maintain login
-        self.browser = await playwright.chromium.launch_persistent_context(
+        self.browser = await self.playwright.chromium.launch_persistent_context(
             user_data_dir=str(WHATSAPP_DATA_DIR),
             headless=HEADLESS,
-            args=['--disable-blink-features=AutomationControlled']
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--disable-dev-shm-usage',
+                '--no-sandbox'
+            ],
+            viewport={'width': 1280, 'height': 800},
+            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         )
 
         # Get or create page
@@ -210,7 +216,8 @@ class WhatsAppWatcher:
             self.page = await self.browser.new_page()
 
         # Navigate to WhatsApp Web
-        await self.page.goto("https://web.whatsapp.com")
+        logger.info("Navigating to WhatsApp Web...")
+        await self.page.goto("https://web.whatsapp.com", wait_until="networkidle")
         logger.info("Navigated to WhatsApp Web")
 
         # Wait for either QR code or chat list
@@ -219,12 +226,26 @@ class WhatsAppWatcher:
     async def wait_for_auth(self):
         """Wait for user to authenticate via QR code."""
         logger.info("Waiting for authentication...")
+        logger.info("Please scan the QR code if prompted...")
+
+        # Multiple possible selectors for logged-in state
+        auth_selectors = [
+            'div[data-testid="chat-list"]',
+            'div[aria-label="Chat list"]',
+            '#pane-side',
+            'div[data-testid="conversation-panel-wrapper"]',
+            'span[data-testid="menu"]'
+        ]
 
         try:
-            # Wait for main chat panel (indicates logged in)
+            # Combined selector - any of these indicates logged in
+            combined_selector = ", ".join(auth_selectors)
+
+            # Wait up to 5 minutes for QR scan
             await self.page.wait_for_selector(
-                'div[data-testid="chat-list"]',
-                timeout=120000  # 2 minutes to scan QR
+                combined_selector,
+                timeout=300000,  # 5 minutes to scan QR
+                state="visible"
             )
             self.is_authenticated = True
             logger.info("Successfully authenticated with WhatsApp Web!")
@@ -232,6 +253,7 @@ class WhatsAppWatcher:
         except Exception as e:
             logger.warning(f"Authentication timeout or error: {e}")
             logger.info("Please scan the QR code in the browser window")
+            self.is_authenticated = False
 
             # Create alert task for user
             create_task_file({
@@ -297,16 +319,34 @@ class WhatsAppWatcher:
     async def check_session_valid(self) -> bool:
         """Check if WhatsApp Web session is still valid."""
         try:
-            # Check for QR code (indicates logged out)
-            qr_code = await self.page.query_selector('canvas[aria-label="Scan me!"]')
+            # Check for QR code (indicates logged out) - multiple possible selectors
+            qr_selectors = [
+                'canvas[aria-label="Scan me!"]',
+                'div[data-testid="qrcode"]',
+                'canvas[aria-label="Scan this QR code to link a device!"]'
+            ]
+            qr_code = None
+            for selector in qr_selectors:
+                qr_code = await self.page.query_selector(selector)
+                if qr_code:
+                    break
             if qr_code:
                 self.is_authenticated = False
                 logger.warning("Session expired - QR code detected")
                 return False
 
-            # Check for chat list (indicates logged in)
-            chat_list = await self.page.query_selector('div[data-testid="chat-list"]')
-            return chat_list is not None
+            # Check for chat list (indicates logged in) - multiple selectors
+            chat_selectors = [
+                'div[data-testid="chat-list"]',
+                'div[aria-label="Chat list"]',
+                '#pane-side',
+                'span[data-testid="menu"]'
+            ]
+            for selector in chat_selectors:
+                chat_list = await self.page.query_selector(selector)
+                if chat_list:
+                    return True
+            return False
 
         except Exception as e:
             logger.error(f"Error checking session: {e}")
