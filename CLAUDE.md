@@ -113,7 +113,15 @@ You are not expected to solve every problem autonomously. You MUST invoke the us
 1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
 2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
 3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+5.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+
+### 6. Git & Commit Standards:
+Agents MUST commit every atomic step taken during the development process. Follow industry standards for Git and GitHub:
+- **Atomic Commits:** Each commit should represent a single, logical change or milestone.
+- **Commit Messages:** Use clear, concise, and descriptive commit messages (e.g., "feat: add email body extraction to gmail_watcher", "fix: resolve path issue in config loader").
+- **Verification:** Ensure code passes tests and linting before committing.
+- **Branching:** Work on feature branches and prepare for PRs as per project conventions.
+- **Process:** Gather information (`git status`, `git diff`), stage changes (`git add`), and commit with a well-formatted message.
 
 ## Default policies (must follow)
 - Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
@@ -127,9 +135,10 @@ You are not expected to solve every problem autonomously. You MUST invoke the us
 1) Confirm surface and success criteria (one sentence).
 2) List constraints, invariants, non‑goals.
 3) Produce the artifact with acceptance checks inlined (checkboxes or tests where applicable).
-4) Add follow‑ups and risks (max 3 bullets).
-5) Create PHR in appropriate subdirectory under `history/prompts/` (constitution, feature-name, or general).
-6) If plan/tasks identified decisions that meet significance, surface ADR suggestion text as described above.
+4) **Commit changes:** Perform atomic git commits for each milestone/step reached using industry-standard messages.
+5) Add follow‑ups and risks (max 3 bullets).
+6) Create PHR in appropriate subdirectory under `history/prompts/` (constitution, feature-name, or general).
+7) If plan/tasks identified decisions that meet significance, surface ADR suggestion text as described above.
 
 ### Minimum acceptance criteria
 - Clear, testable acceptance criteria included
