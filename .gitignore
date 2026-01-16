@@ -73,9 +73,8 @@ coverage.xml
 
 # Serena
 .serena/memories/
+config/linkedin_data/
 
 node_modules/
 frontend/node_modules/
 frontend/.next/
-
-

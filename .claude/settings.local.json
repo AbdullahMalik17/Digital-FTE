@@ -13,7 +13,9 @@
       "Bash(git commit:*)",
       "Bash(git fetch:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git rebase:*)",
+      "Bash(GIT_EDITOR=true git rebase:*)"
     ]
   }
 }

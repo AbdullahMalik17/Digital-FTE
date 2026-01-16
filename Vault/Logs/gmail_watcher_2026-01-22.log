@@ -1,0 +1,22 @@
+2026-01-22 12:29:40,467 - GmailWatcher - INFO - Logging to file: D:\Hacathan_2\Vault\Logs\gmail_watcher_2026-01-22.log
+2026-01-22 12:29:40,475 - GmailWatcher - INFO - Refreshing expired credentials...
+2026-01-22 12:29:41,413 - GmailWatcher - INFO - Credentials saved to D:\Hacathan_2\config\token.json
+2026-01-22 12:29:41,428 - GmailWatcher - INFO - Successfully authenticated with Gmail API
+2026-01-22 12:29:48,149 - GmailWatcher - INFO - Processing [NOT_IMPORTANT]: You have canceled Premium Business from LinkedIn <billing-noreply@linkedin.com>
+2026-01-22 12:29:48,155 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_not_important_You have canceled Premium Business.md
+2026-01-22 12:29:48,156 - GmailWatcher - INFO - Processing [MEDIUM]: Update to Render's list of subprocessors from Render <no-reply@render.com>
+2026-01-22 12:29:48,161 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_medium_Update to Renders list of subprocessors.md
+2026-01-22 12:29:48,162 - GmailWatcher - INFO - Processing [NOT_IMPORTANT]: Your LinkedIn: Jobs & Business News subscription will be canceled from Google Play <googleplay-noreply@google.com>
+2026-01-22 12:29:48,171 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_not_important_Your LinkedIn Jobs  Business News subscription wil.md
+2026-01-22 12:29:48,173 - GmailWatcher - INFO - Processing [MEDIUM]: Break from assignments? Let's design. from Canva <product@engage.canva.com>
+2026-01-22 12:29:48,179 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_medium_Break from assignments Lets design.md
+2026-01-22 12:29:48,184 - GmailWatcher - INFO - Processing [NOT_IMPORTANT]: Re: [openai/openai-python] release: 2.16.0 (PR #2824) from "stainless-app[bot]" <notifications@github.com>
+2026-01-22 12:29:48,185 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_not_important_Re openaiopenai-python release 2160 PR 2824.md
+2026-01-22 12:29:48,193 - GmailWatcher - INFO - Processing [NOT_IMPORTANT]: Re: [openai/openai-python] release: 2.16.0 (PR #2824) from "stainless-app[bot]" <notifications@github.com>
+2026-01-22 12:29:48,193 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_not_important_Re openaiopenai-python release 2160 PR 2824.md
+2026-01-22 12:29:48,198 - GmailWatcher - INFO - Processing [MEDIUM]: Replit Product Updates - First Half of January from "Matt Palmer's Partner in Crime" <matt@mail.replit.com>
+2026-01-22 12:29:48,201 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_medium_Replit Product Updates - First Half of January.md
+2026-01-22 12:29:48,205 - GmailWatcher - INFO - Processing [NOT_IMPORTANT]: I Rewrote A Java Microservice In Rust And Lost My Job | Noah Byteforge from Medium Daily Digest <noreply@medium.com>
+2026-01-22 12:29:48,211 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_not_important_I Rewrote A Java Microservice In Rust And Lost My .md
+2026-01-22 12:29:48,213 - GmailWatcher - INFO - Processing [MEDIUM]: Never miss an important message from Slack <no-reply@email.slackhq.com>
+2026-01-22 12:29:48,218 - GmailWatcher - INFO - Created task file: D:\Hacathan_2\Vault\Needs_Action\2026-01-22_12-29_gmail_medium_Never miss an important message.md
