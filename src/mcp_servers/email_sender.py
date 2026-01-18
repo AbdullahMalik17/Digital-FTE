@@ -16,6 +16,7 @@ from jinja2 import Environment, FileSystemLoader
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 from src.utils.google_auth import get_gmail_service
+from src.utils.audit_logger import log_audit as log_audit_trail, AuditDomain, AuditStatus
 
 # Configuration
 VAULT_PATH = PROJECT_ROOT / "Vault"
@@ -158,23 +159,70 @@ To approve, move this file to `Vault/Approved/`.
 """
         with open(filepath, "w") as f:
             f.write(content)
-            
+
         log_audit(to, subject, "PENDING_APPROVAL", message_id=f"pending:{filename}")
+
+        # New audit trail
+        log_audit_trail(
+            action="email.send",
+            actor="email_sender_mcp",
+            domain=AuditDomain.PERSONAL,
+            resource=to,
+            status=AuditStatus.PENDING,
+            details={"subject": subject, "approval_file": str(filepath)},
+            approval_required=True
+        )
+
         return f"Email queued for approval at {filepath}"
 
     # Check limits
     if not check_rate_limits():
         error = "Rate limit exceeded"
         log_audit(to, subject, "FAILED", error=error)
+
+        # New audit trail
+        log_audit_trail(
+            action="email.send",
+            actor="email_sender_mcp",
+            domain=AuditDomain.PERSONAL,
+            resource=to,
+            status=AuditStatus.FAILURE,
+            details={"subject": subject},
+            error=error
+        )
+
         return f"Error: {error}"
 
     try:
         result = _send_gmail(to, subject, body)
         msg_id = result.get('id')
         log_audit(to, subject, "SUCCESS", message_id=msg_id)
+
+        # New audit trail
+        log_audit_trail(
+            action="email.send",
+            actor="email_sender_mcp",
+            domain=AuditDomain.PERSONAL,
+            resource=to,
+            status=AuditStatus.SUCCESS,
+            details={"subject": subject, "message_id": msg_id}
+        )
+
         return f"Email sent successfully. ID: {msg_id}"
     except Exception as e:
         log_audit(to, subject, "FAILED", error=str(e))
+
+        # New audit trail
+        log_audit_trail(
+            action="email.send",
+            actor="email_sender_mcp",
+            domain=AuditDomain.PERSONAL,
+            resource=to,
+            status=AuditStatus.FAILURE,
+            details={"subject": subject},
+            error=str(e)
+        )
+
         return f"Error sending email: {str(e)}"
 
 @mcp.tool()

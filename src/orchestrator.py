@@ -11,6 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
+# Import audit logger
+from utils.audit_logger import log_audit, AuditDomain, AuditStatus
+
 # Configuration
 PROJECT_ROOT = Path(__file__).parent.parent
 VAULT_PATH = PROJECT_ROOT / "Vault"
@@ -19,6 +22,7 @@ PENDING_APPROVAL_PATH = VAULT_PATH / "Pending_Approval"
 APPROVED_PATH = VAULT_PATH / "Approved"
 DONE_PATH = VAULT_PATH / "Done"
 LOGS_PATH = VAULT_PATH / "Logs"
+PLANS_PATH = VAULT_PATH / "Plans"
 CONFIG_PATH = PROJECT_ROOT / "config"
 LINKEDIN_QUEUE_PATH = VAULT_PATH / "LinkedIn_Queue"
 
@@ -146,7 +150,7 @@ class DigitalFTEOrchestrator:
     def _ensure_directories(self):
         """Ensure all required directories exist."""
         for path in [NEEDS_ACTION_PATH, PENDING_APPROVAL_PATH,
-                     APPROVED_PATH, DONE_PATH, LOGS_PATH, LINKEDIN_QUEUE_PATH]:
+                     APPROVED_PATH, DONE_PATH, LOGS_PATH, PLANS_PATH, LINKEDIN_QUEUE_PATH]:
             path.mkdir(parents=True, exist_ok=True)
 
     def _load_handbook(self) -> str:
@@ -257,6 +261,40 @@ JSON ONLY.
         task_id = task_path.name
         logger.info(f"Processing Task: {task_id}")
 
+        # Audit log: Task processing started
+        log_audit(
+            action="orchestrator.process_task",
+            actor="orchestrator",
+            domain=AuditDomain.SYSTEM,
+            resource=task_id,
+            status=AuditStatus.PENDING,
+            details={"task_file": str(task_path)}
+        )
+
+        # Check complexity and create plan if needed
+        try:
+            task_content = task_path.read_text(encoding='utf-8')
+            complexity_info = self.detect_complexity(task_content, task_id)
+
+            if complexity_info['is_complex']:
+                logger.info(f"🎯 Complex task detected (score: {complexity_info['complexity_score']}/10)")
+                logger.info(f"📋 Generating strategic plan...")
+
+                # Create strategic plan
+                plan_path = self.create_plan(task_path, complexity_info)
+
+                if plan_path:
+                    logger.info(f"✅ Plan created: {plan_path.name}")
+                else:
+                    logger.warning("⚠️  Plan creation failed, continuing without plan")
+            else:
+                logger.info(f"Simple task (complexity: {complexity_info['complexity_score']}/10)")
+
+        except Exception as e:
+            logger.warning(f"Complexity detection failed: {e}")
+            # Continue processing even if complexity detection fails
+
+        # Normal supervision prompt
         prompt = self.build_supervisor_prompt(task_path)
         success, decision_data, agent = self.invoke_agent(prompt, task_path)
 
@@ -267,20 +305,49 @@ JSON ONLY.
         # Execute decision
         target_folder = decision_data.get("target_folder")
         analysis = decision_data.get("analysis", "No analysis provided")
-        
+
         logger.info(f"Agent Decision: Move to {target_folder}")
         logger.info(f"Analysis: {analysis}")
 
         if target_folder == "Done":
             self._move_task(task_path, DONE_PATH)
             self._log_action("task_completed", {"task": task_id, "agent": agent, "analysis": analysis})
+            # Audit log: Task completed
+            log_audit(
+                action="orchestrator.task_completed",
+                actor="orchestrator",
+                domain=AuditDomain.SYSTEM,
+                resource=task_id,
+                status=AuditStatus.SUCCESS,
+                details={"agent": agent, "target": "Done"}
+            )
             return True
         elif target_folder == "Pending_Approval":
             self._move_task(task_path, PENDING_APPROVAL_PATH)
             self._log_action("task_needs_approval", {"task": task_id, "agent": agent, "analysis": analysis})
+            # Audit log: Task needs approval
+            log_audit(
+                action="orchestrator.task_needs_approval",
+                actor="orchestrator",
+                domain=AuditDomain.SYSTEM,
+                resource=task_id,
+                status=AuditStatus.PENDING,
+                details={"agent": agent, "target": "Pending_Approval"},
+                approval_required=True
+            )
             return True
         else:
             logger.warning(f"Unknown target folder: {target_folder}")
+            # Audit log: Task processing failed
+            log_audit(
+                action="orchestrator.process_task",
+                actor="orchestrator",
+                domain=AuditDomain.SYSTEM,
+                resource=task_id,
+                status=AuditStatus.FAILURE,
+                details={"error": f"Unknown target folder: {target_folder}"},
+                error=f"Unknown target folder: {target_folder}"
+            )
             return False
 
     def _move_task(self, src: Path, dest_dir: Path):
@@ -376,6 +443,255 @@ JSON ONLY.
         except Exception as e:
             logger.error(f"LinkedIn scheduler error: {e}")
 
+    def detect_complexity(self, task_content: str, task_name: str) -> Dict[str, Any]:
+        """
+        Detect if a task is complex and needs a strategic plan.
+
+        Returns dict with:
+        - is_complex: bool
+        - complexity_score: int (0-10)
+        - reasons: List[str]
+        - task_type: str
+        """
+        complexity_score = 0
+        reasons = []
+        task_type = "simple"
+
+        content_lower = task_content.lower()
+
+        # Complexity indicators
+
+        # 1. Technical keywords (2 points each)
+        technical_keywords = [
+            "implement", "architecture", "design", "integrate", "refactor",
+            "api", "database", "authentication", "optimization", "algorithm"
+        ]
+        tech_matches = sum(1 for kw in technical_keywords if kw in content_lower)
+        if tech_matches >= 2:
+            complexity_score += 2
+            reasons.append(f"Contains {tech_matches} technical keywords")
+            task_type = "technical"
+
+        # 2. Multi-step indicators (3 points)
+        step_indicators = ["step", "phase", "stage", "first", "then", "after"]
+        if sum(1 for ind in step_indicators if ind in content_lower) >= 2:
+            complexity_score += 3
+            reasons.append("Appears to be multi-step task")
+
+        # 3. Research/decision keywords (2 points)
+        decision_keywords = ["research", "analyze", "investigate", "compare", "decide", "choose", "evaluate"]
+        if any(kw in content_lower for kw in decision_keywords):
+            complexity_score += 2
+            reasons.append("Requires research or decision-making")
+            task_type = "research"
+
+        # 4. Length indicator (1 point if >500 chars)
+        if len(task_content) > 500:
+            complexity_score += 1
+            reasons.append("Lengthy task description")
+
+        # 5. Question marks (indicates uncertainty - 1 point)
+        if task_content.count('?') >= 2:
+            complexity_score += 1
+            reasons.append("Contains multiple questions")
+
+        # 6. Code/technical markers (2 points)
+        if any(marker in task_content for marker in ['```', 'function', 'class', 'module']):
+            complexity_score += 2
+            reasons.append("Contains code or technical specifications")
+
+        # 7. Integration/system keywords (3 points)
+        integration_keywords = ["integrate", "connect", "sync", "migration", "deployment"]
+        if any(kw in content_lower for kw in integration_keywords):
+            complexity_score += 3
+            reasons.append("Involves system integration")
+            task_type = "integration"
+
+        # Determine if complex (threshold: 5+)
+        is_complex = complexity_score >= 5
+
+        return {
+            "is_complex": is_complex,
+            "complexity_score": complexity_score,
+            "reasons": reasons,
+            "task_type": task_type
+        }
+
+    def build_planning_prompt(self, task_path: Path, task_content: str) -> str:
+        """Build prompt for strategic plan generation."""
+
+        prompt = f"""You are a strategic planning AI. Generate a detailed implementation plan in markdown format.
+
+Task File: {task_path.name}
+Task Content:
+{task_content[:1500]}
+
+Generate a strategic plan with these exact sections:
+
+# Strategic Plan: [Task Title]
+
+## Problem Analysis
+- What problem are we solving?
+- Why is this important?
+- What are the constraints?
+
+## Approach & Strategy
+- What's the overall approach?
+- Why this approach over alternatives?
+- What are the key technical decisions?
+
+## Implementation Steps
+1. [Step 1 with details]
+2. [Step 2 with details]
+3. [Step 3 with details]
+...
+
+## Success Criteria
+- How do we know we're done?
+- What are the acceptance criteria?
+- How will we test/validate?
+
+## Resources Needed
+- Tools, libraries, APIs required
+- Documentation references
+- People/expertise needed
+
+## Risk Assessment
+- What could go wrong?
+- Mitigation strategies
+- Contingency plans
+
+## Timeline Estimate
+- Rough time estimates per step
+- Total estimated duration
+- Dependencies and blockers
+
+---
+*Generated by Digital FTE Orchestrator*
+*Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}*
+
+Output ONLY the markdown plan above. Do not add any other text."""
+
+        return prompt
+
+    def create_plan(self, task_path: Path, complexity_info: Dict[str, Any]) -> Optional[Path]:
+        """
+        Create a strategic Plan.md file for a complex task.
+
+        Returns path to created plan file or None if failed.
+        """
+        if self.dry_run:
+            logger.info(f"[DRY RUN] Would create plan for: {task_path.name}")
+            return None
+
+        try:
+            task_content = task_path.read_text(encoding='utf-8')
+
+            logger.info(f"Creating strategic plan for: {task_path.name}")
+            logger.info(f"Complexity Score: {complexity_info['complexity_score']}/10")
+            logger.info(f"Reasons: {', '.join(complexity_info['reasons'])}")
+
+            # Build planning prompt
+            prompt = self.build_planning_prompt(task_path, task_content)
+
+            # Invoke AI agent for plan generation
+            success, response_data, agent = self.invoke_agent(prompt, task_path)
+
+            if not success:
+                logger.warning("Failed to generate plan - continuing without plan")
+                return None
+
+            # Extract plan content
+            # The response might be JSON or direct markdown
+            if isinstance(response_data, dict):
+                # If JSON, look for plan in various keys
+                plan_content = response_data.get('plan') or response_data.get('content') or response_data.get('analysis') or str(response_data)
+            else:
+                plan_content = str(response_data)
+
+            # Generate plan filename
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+            task_type = complexity_info.get('task_type', 'general')
+
+            # Extract brief description from task name (remove timestamp and metadata)
+            brief_desc = re.sub(r'^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}_', '', task_path.stem)
+            brief_desc = re.sub(r'_(high|medium|low|urgent)_', '_', brief_desc)
+            brief_desc = brief_desc[:50]  # Limit length
+
+            plan_filename = f"{timestamp}_{task_type}_{brief_desc}.plan.md"
+            plan_path = PLANS_PATH / plan_filename
+
+            # Write plan file
+            plan_path.write_text(plan_content, encoding='utf-8')
+
+            logger.info(f"Plan created: {plan_filename}")
+            logger.info(f"Plan saved to: {plan_path}")
+
+            # Log plan creation
+            self._log_action("plan_created", {
+                "task": task_path.name,
+                "plan_file": plan_filename,
+                "complexity_score": complexity_info['complexity_score'],
+                "agent": agent,
+                "task_type": task_type
+            })
+
+            # Audit log: Plan created
+            log_audit(
+                action="orchestrator.create_plan",
+                actor=agent,
+                domain=AuditDomain.SYSTEM,
+                resource=plan_filename,
+                status=AuditStatus.SUCCESS,
+                details={
+                    "task": task_path.name,
+                    "complexity_score": complexity_info['complexity_score'],
+                    "task_type": task_type
+                }
+            )
+
+            # Add plan reference to task file
+            self._add_plan_reference(task_path, plan_path)
+
+            return plan_path
+
+        except Exception as e:
+            logger.error(f"Failed to create plan: {e}")
+            return None
+
+    def _add_plan_reference(self, task_path: Path, plan_path: Path):
+        """Add reference to plan in task file."""
+        try:
+            content = task_path.read_text(encoding='utf-8')
+
+            # Add plan reference at the top
+            plan_reference = f"""
+---
+**📋 Strategic Plan Generated:** [{plan_path.name}](../Plans/{plan_path.name})
+**Plan Location:** `Vault/Plans/{plan_path.name}`
+---
+
+"""
+            # Insert after first header or at beginning
+            if content.startswith('#'):
+                lines = content.split('\n')
+                # Find first non-header line
+                insert_idx = 1
+                for i, line in enumerate(lines[1:], 1):
+                    if not line.startswith('#') and line.strip():
+                        insert_idx = i
+                        break
+                lines.insert(insert_idx, plan_reference)
+                content = '\n'.join(lines)
+            else:
+                content = plan_reference + content
+
+            task_path.write_text(content, encoding='utf-8')
+            logger.info(f"Added plan reference to task file")
+
+        except Exception as e:
+            logger.warning(f"Could not add plan reference to task: {e}")
+
     def _log_action(self, action: str, details: Dict[str, Any]):
         """Log action."""
         log_entry = {
@@ -385,7 +701,7 @@ JSON ONLY.
             **details
         }
         log_file = LOGS_PATH / f"{datetime.now().strftime('%Y-%m-%d')}.json"
-        
+
         logs = []
         if log_file.exists():
             try:
