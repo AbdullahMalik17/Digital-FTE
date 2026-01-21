@@ -159,7 +159,7 @@ To approve, move this file to `Vault/Approved/`.
         with open(filepath, "w") as f:
             f.write(content)
             
-        log_audit(to, subject, "PENDING_APPROVAL", details=f"Saved to {filename}")
+        log_audit(to, subject, "PENDING_APPROVAL", message_id=f"pending:{filename}")
         return f"Email queued for approval at {filepath}"
 
     # Check limits
@@ -197,7 +197,7 @@ def send_from_template(template_name: str, to: str, variables: Dict[str, str], r
         # Subject usually needs to be handled. 
         # For this prototype, we'll assume the template might include frontmatter or we pass subject separate?
         # The spec says: send_from_template(template_id, to, variables).
-        # Let's assume the template contains the subject in the first line or we pass it? 
+        # Let's assume the template contains the subject in the first line or we pass it?
         # I'll update the signature to accept 'subject' or extract it.
         # Simple approach: The tool doesn't take subject, so maybe the template renders it?
         # Or I add subject argument. I'll add 'subject' to variables or argument.
