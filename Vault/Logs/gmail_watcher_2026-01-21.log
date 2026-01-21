@@ -43,3 +43,5 @@
 2026-01-21 12:03:11,338 - GmailWatcher - INFO - Refreshing expired credentials...
 2026-01-21 12:03:13,071 - GmailWatcher - INFO - Credentials saved to D:\Hacathan_2\config\token.json
 2026-01-21 12:03:13,086 - GmailWatcher - INFO - Successfully authenticated with Gmail API
+2026-01-21 12:08:56,665 - GmailWatcher - INFO - Logging to file: D:\Hacathan_2\Vault\Logs\gmail_watcher_2026-01-21.log
+2026-01-21 12:08:56,695 - GmailWatcher - INFO - Successfully authenticated with Gmail API
