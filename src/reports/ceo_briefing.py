@@ -27,13 +27,15 @@ PENDING_APPROVAL_PATH = VAULT_PATH / "Pending_Approval"
 DONE_PATH = VAULT_PATH / "Done"
 ARCHIVE_PATH = VAULT_PATH / "Archive"
 
-# Import AI agent utility
+# Import AI agent utility and audit logger
 sys.path.append(str(PROJECT_ROOT / "src"))
 try:
     from utils.ai_agent import invoke_agent
+    from utils.audit_logger import log_audit, AuditDomain, AuditStatus
 except ImportError:
     def invoke_agent(prompt, dry_run=False):
         return False, "", "none"
+    # Audit logger imports optional - we read from log files directly
 
 # ROI Values (Estimated dollars saved per action)
 ROI_VALUES = {

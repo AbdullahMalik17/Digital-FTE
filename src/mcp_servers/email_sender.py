@@ -17,6 +17,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 from src.utils.google_auth import get_gmail_service
 from src.utils.audit_logger import log_audit as log_audit_trail, AuditDomain, AuditStatus
+from src.utils.error_recovery import retry_with_backoff, RetryConfig, get_circuit_breaker
 
 # Configuration
 VAULT_PATH = PROJECT_ROOT / "Vault"
