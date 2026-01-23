@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Robot Head Outline -->
+  <rect x="128" y="120" width="256" height="220" rx="40" fill="#0f172a" stroke="#60a5fa" stroke-width="4"/>
+
+  <!-- Eyes -->
+  <circle cx="200" cy="200" r="32" fill="url(#glow)">
+    <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="312" cy="200" r="32" fill="url(#glow)">
+    <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite" begin="0.2s"/>
+  </circle>
+
+  <!-- Eye Pupils -->
+  <circle cx="200" cy="200" r="12" fill="#0f172a"/>
+  <circle cx="312" cy="200" r="12" fill="#0f172a"/>
+
+  <!-- Mouth/Display -->
+  <rect x="168" y="260" width="176" height="48" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="2"/>
+
+  <!-- Mouth Lines (activity indicator) -->
+  <g fill="#60a5fa">
+    <rect x="184" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="16;8;16" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="204" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="8;16;8" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="224" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="16;8;16" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+    </rect>
+    <rect x="244" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="8;16;8" dur="0.5s" repeatCount="indefinite" begin="0.15s"/>
+    </rect>
+    <rect x="264" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="16;8;16" dur="0.5s" repeatCount="indefinite" begin="0.2s"/>
+    </rect>
+    <rect x="284" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="8;16;8" dur="0.5s" repeatCount="indefinite" begin="0.25s"/>
+    </rect>
+    <rect x="304" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="16;8;16" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
+    </rect>
+    <rect x="324" y="276" width="8" height="16" rx="2">
+      <animate attributeName="height" values="8;16;8" dur="0.5s" repeatCount="indefinite" begin="0.35s"/>
+    </rect>
+  </g>
+
+  <!-- Antenna -->
+  <rect x="248" y="80" width="16" height="48" rx="4" fill="#60a5fa"/>
+  <circle cx="256" cy="72" r="16" fill="#60a5fa">
+    <animate attributeName="fill" values="#60a5fa;#3b82f6;#60a5fa" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Body/Neck -->
+  <rect x="216" y="340" width="80" height="40" fill="#0f172a"/>
+
+  <!-- Shoulders -->
+  <rect x="136" y="380" width="240" height="80" rx="16" fill="#0f172a" stroke="#60a5fa" stroke-width="3"/>
+
+  <!-- Chest Display -->
+  <text x="256" y="430" text-anchor="middle" fill="#60a5fa" font-family="monospace" font-size="24" font-weight="bold">FTE</text>
+</svg>

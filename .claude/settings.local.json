@@ -35,7 +35,10 @@
       "Bash(wc:*)",
       "Bash(python3 -m pytest:*)",
       "Bash(python3:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(pkill:*)"
     ]
   }
 }
