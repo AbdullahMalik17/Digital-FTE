@@ -116,8 +116,20 @@ async function subscribeToPush() {
 
     if (!subscription) {
       // Get VAPID public key from server
-      // For now, we'll use a placeholder - you need to generate real keys
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      let vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+      // Try to fetch from API if not in env
+      if (!vapidPublicKey) {
+        try {
+          const response = await fetch('/api/notifications/vapid-public-key');
+          if (response.ok) {
+            const data = await response.json();
+            vapidPublicKey = data.publicKey;
+          }
+        } catch (e) {
+          console.log('Could not fetch VAPID key from API');
+        }
+      }
 
       if (!vapidPublicKey) {
         console.log('VAPID public key not configured');
@@ -130,17 +142,53 @@ async function subscribeToPush() {
       });
     }
 
-    // Send subscription to server
-    await fetch('/api/notifications/subscribe', {
+    // Get device name for identification
+    const deviceName = getDeviceName();
+
+    // Send subscription to server using our new API
+    const response = await fetch('/api/notifications/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(subscription),
+      body: JSON.stringify({
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+          auth: arrayBufferToBase64(subscription.getKey('auth')),
+        },
+        device_name: deviceName,
+      }),
     });
 
-    console.log('Push notification subscription successful');
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Push subscription registered:', result.device_name);
+    } else {
+      console.error('Failed to register subscription');
+    }
   } catch (error) {
     console.error('Error subscribing to push:', error);
   }
+}
+
+// Get friendly device name
+function getDeviceName(): string {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iPhone';
+  if (/Android/.test(ua)) return 'Android Phone';
+  if (/Windows/.test(ua)) return 'Windows PC';
+  if (/Mac/.test(ua)) return 'Mac';
+  return 'Unknown Device';
+}
+
+// Convert ArrayBuffer to base64
+function arrayBufferToBase64(buffer: ArrayBuffer | null): string {
+  if (!buffer) return '';
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
 }
 
 // Helper function to convert VAPID key

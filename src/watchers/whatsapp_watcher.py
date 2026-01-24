@@ -163,18 +163,70 @@ class WhatsAppWatcher:
         # Persistent context starts with one page
         self.page = self.context.pages[0] if self.context.pages else await self.context.new_page()
         
-        await self.page.goto("https://web.whatsapp.com")
+        await self.page.goto("https://web.whatsapp.com", timeout=60000, wait_until="domcontentloaded")
         
         # Wait for authentication
         logger.info("Waiting for authentication...")
         try:
-            # Check for main interface element (e.g., chat list)
-            await self.page.wait_for_selector('div[data-testid="chat-list-search"]', timeout=60000)
-            self.is_authenticated = True
-            logger.info("✅ Authentication successful")
-        except Exception:
+            # Race between success (chat list) and needs auth (QR code)
+            # We use a longer timeout for the user to scan the QR code if it appears
+            
+            # First, wait for the page to load enough to show either
+            await self.page.wait_for_load_state("domcontentloaded", timeout=60000)
+            
+            try:
+                # Check if we are already logged in (chat list visible immediately)
+                await self.page.wait_for_selector('div[data-testid="chat-list-search"]', timeout=10000)
+                self.is_authenticated = True
+                logger.info("✅ Authentication successful (Session restored)")
+                return
+            except:
+                pass
+                
+            # If not immediately logged in, look for QR code or wait for login
+            logger.info("Session not restored immediately. Checking for QR code...")
+            
+            # Wait up to 2 minutes for user to scan QR code if needed
+            # Check for multiple possible success indicators
+            login_success_selectors = [
+                'div[data-testid="chat-list-search"]',
+                'div[data-testid="menu-bar-chat-list"]', 
+                'span[data-testid="chat"]',
+                'header[data-testid="chat-list-header"]',
+                'div[id="pane-side"]'
+            ]
+            
+            logger.info("Waiting for login success indicators...")
+            # Create a combined selector or loop through them
+            # Playwright doesn't support "OR" in waitForSelector easily with different types, 
+            # so we'll poll for them.
+            
+            start_time = time.time()
+            while time.time() - start_time < 120:
+                for selector in login_success_selectors:
+                    try:
+                        if await self.page.query_selector(selector):
+                            self.is_authenticated = True
+                            logger.info(f"✅ Authentication successful (Found {selector})")
+                            return
+                    except:
+                        pass
+                await asyncio.sleep(1)
+                
+            raise TimeoutError("Login indicators not found after 120s")
+            
+        except Exception as e:
             self.is_authenticated = False
-            logger.warning("⚠️ Authentication failed or QR code needed")
+            logger.warning(f"⚠️ Authentication failed or timed out: {e}")
+            
+            # Take debug screenshot
+            try:
+                debug_shot = LOGS_PATH / f"whatsapp_login_fail_{datetime.now().strftime('%H%M%S')}.png"
+                await self.page.screenshot(path=str(debug_shot))
+                logger.info(f"Saved debug screenshot to {debug_shot}")
+            except Exception as s_e:
+                logger.error(f"Could not take screenshot: {s_e}")
+
             # Notification logic (FR-005)
             self._notify_auth_needed()
 
@@ -193,7 +245,7 @@ The WhatsApp Watcher cannot log in.
 
 **Status:** Critical - Messaging Halted
 """
-        with open(alert_file, 'w') as f:
+        with open(alert_file, 'w', encoding='utf-8') as f:
             f.write(content)
         logger.warning("Created auth alert task")
 
@@ -210,7 +262,8 @@ The WhatsApp Watcher cannot log in.
             for badge in unread_selectors:
                 try:
                     # Get parent container to find chat name
-                    parent = await badge.evaluate_handle('el => el.closest("div[role=\'listitem\']")')
+                    parent_handle = await badge.evaluate_handle('el => el.closest("div[role=\'listitem\']")')
+                    parent = parent_handle.as_element()
                     if not parent: continue
 
                     # Extract chat name

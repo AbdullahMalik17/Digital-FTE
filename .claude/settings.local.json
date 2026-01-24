@@ -38,7 +38,8 @@
       "Bash(git config:*)",
       "Bash(npm install)",
       "Bash(npm run build:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Skill(project-designer)"
     ]
   }
 }

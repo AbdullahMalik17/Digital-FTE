@@ -1,6 +1,8 @@
 """
-Context Monitor - Proactive suggestion system.
+Context Monitor - Proactive suggestion system with Mobile Notifications.
+
 Monitors various contexts and suggests actions before user asks.
+Integrated with Push Notification service to send alerts to phone.
 """
 
 import asyncio
@@ -8,9 +10,18 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 
 from src.intelligence.agentic_intelligence import AgenticIntelligence
 from src.models.enhancements.task_analysis import ApproachDecision
+
+# Import push notification service
+try:
+    from src.notifications import get_push_service, NotificationPayload
+    HAS_PUSH = True
+except ImportError:
+    HAS_PUSH = False
+    print("[ContextMonitor] Push notifications not available")
 
 
 class ContextType(Enum):
@@ -75,7 +86,8 @@ class ContextMonitor:
         self,
         intelligence: AgenticIntelligence,
         learning_db=None,
-        monitoring_interval: int = 300  # 5 minutes
+        monitoring_interval: int = 300,  # 5 minutes
+        enable_push_notifications: bool = True
     ):
         """
         Initialize context monitor.
@@ -84,10 +96,15 @@ class ContextMonitor:
             intelligence: Agentic intelligence for decision making
             learning_db: Database for learning patterns
             monitoring_interval: How often to check context (seconds)
+            enable_push_notifications: Whether to send push notifications
         """
         self.intelligence = intelligence
         self.learning_db = learning_db
         self.monitoring_interval = monitoring_interval
+        self.enable_push = enable_push_notifications and HAS_PUSH
+
+        # Push notification service
+        self.push_service = get_push_service() if self.enable_push else None
 
         # Active monitors (can be enabled/disabled per context type)
         self.active_monitors = {
@@ -105,6 +122,11 @@ class ContextMonitor:
 
         # Running flag
         self.is_running = False
+
+        # Daily digest tracking
+        self.last_digest_date: Optional[datetime] = None
+
+        print(f"[ContextMonitor] Push notifications: {'enabled' if self.enable_push else 'disabled'}")
 
     async def start(self):
         """Start monitoring context in background."""
@@ -444,22 +466,22 @@ class ContextMonitor:
                 continue
 
             # Same title/action = duplicate
-            if (recent.title == suggestion.title or
-                recent.suggested_action == suggestion.suggested_action):
+            if (
+                recent.title == suggestion.title or
+                recent.suggested_action == suggestion.suggested_action
+            ):
                 return True
 
         return False
 
     async def _present_suggestion(self, suggestion: ProactiveSuggestion):
         """
-        Present suggestion to user.
+        Present suggestion to user via push notification and console.
 
-        In production, this would:
-        - Show notification
-        - Add to suggestion queue
-        - Wait for user response
-
-        For now, just log it.
+        This method:
+        - Sends push notification to phone
+        - Logs to console
+        - Stores in suggestion queue
         """
         print(f"\n[PROACTIVE SUGGESTION]")
         print(f"Priority: {suggestion.priority}/5")
@@ -472,12 +494,47 @@ class ContextMonitor:
         for reason in suggestion.reasoning:
             print(f"  - {reason}")
 
+        # Send push notification to phone
+        if self.enable_push and self.push_service:
+            try:
+                # Map priority (1-5) to notification priority
+                priority_map = {
+                    1: "urgent",
+                    2: "high",
+                    3: "normal",
+                    4: "normal",
+                    5: "low"
+                }
+
+                result = await self.push_service.send_proactive_suggestion(
+                    title=suggestion.title,
+                    description=suggestion.description,
+                    action_id=suggestion.id,
+                    priority=priority_map.get(suggestion.priority, "normal"),
+                    context={
+                        "confidence": suggestion.confidence,
+                        "actions": suggestion.suggested_action,
+                        "reasoning": suggestion.reasoning
+                    }
+                )
+
+                if result.get("sent", 0) > 0:
+                    print(f"[ContextMonitor] 📱 Push notification sent to {result['sent']} device(s)")
+                else:
+                    print(f"[ContextMonitor] No devices to notify: {result.get('reason', 'unknown')}")
+
+            except Exception as e:
+                print(f"[ContextMonitor] Failed to send push notification: {e}")
+
         # Store in recent suggestions
         self.recent_suggestions.append(suggestion)
 
         # Keep only last 20 suggestions in memory
         if len(self.recent_suggestions) > 20:
             self.recent_suggestions = self.recent_suggestions[-20:]
+
+        # Save suggestion to file for persistence
+        await self._save_suggestion_to_file(suggestion)
 
     async def record_feedback(
         self,
@@ -543,3 +600,165 @@ class ContextMonitor:
             'rejected': total - accepted,
             'acceptance_rate': accepted / total
         }
+
+    async def _save_suggestion_to_file(self, suggestion: ProactiveSuggestion):
+        """Save suggestion to Vault for persistence."""
+        try:
+            import json
+
+            vault_dir = Path("Vault/Suggestions")
+            vault_dir.mkdir(parents=True, exist_ok=True)
+
+            filename = vault_dir / f"suggestion_{suggestion.id[:20]}.json"
+
+            with open(filename, "w") as f:
+                json.dump(suggestion.to_dict(), f, indent=2)
+
+        except Exception as e:
+            print(f"[ContextMonitor] Failed to save suggestion: {e}")
+
+    async def send_daily_digest(self):
+        """
+        Send daily morning digest notification.
+
+        Called at 9am to give user a summary of:
+        - Pending tasks
+        - Urgent items
+        - Proactive suggestions
+        - Calendar overview
+        """
+        if not self.enable_push or not self.push_service:
+            print("[ContextMonitor] Push not enabled for digest")
+            return
+
+        # Check if already sent today
+        today = datetime.now().date()
+        if self.last_digest_date == today:
+            print("[ContextMonitor] Digest already sent today")
+            return
+
+        try:
+            # Gather digest data
+            pending_tasks = await self._count_pending_tasks()
+            urgent_items = await self._count_urgent_items()
+            suggestions = await self._get_top_suggestions()
+
+            # Build summary
+            summary_parts = []
+            if urgent_items > 0:
+                summary_parts.append(f"{urgent_items} urgent")
+            if pending_tasks > 0:
+                summary_parts.append(f"{pending_tasks} tasks pending")
+
+            summary = " | ".join(summary_parts) if summary_parts else "All clear today!"
+
+            # Send digest notification
+            result = await self.push_service.send_daily_digest(
+                summary=summary,
+                task_count=pending_tasks,
+                urgent_count=urgent_items,
+                suggestions=[s.title for s in suggestions[:5]]
+            )
+
+            if result.get("sent", 0) > 0:
+                print(f"[ContextMonitor] ☀️ Daily digest sent to {result['sent']} device(s)")
+                self.last_digest_date = today
+            else:
+                print(f"[ContextMonitor] Digest not sent: {result.get('reason', 'no subscribers')}")
+
+        except Exception as e:
+            print(f"[ContextMonitor] Failed to send daily digest: {e}")
+
+    async def _count_pending_tasks(self) -> int:
+        """Count pending tasks in Vault."""
+        try:
+            needs_action = Path("Vault/Needs_Action")
+            in_progress = Path("Vault/In_Progress")
+
+            count = 0
+            if needs_action.exists():
+                count += len(list(needs_action.glob("*.md")))
+            if in_progress.exists():
+                count += len(list(in_progress.glob("**/*.md")))
+
+            return count
+        except Exception:
+            return 0
+
+    async def _count_urgent_items(self) -> int:
+        """Count urgent items in Vault."""
+        try:
+            needs_action = Path("Vault/Needs_Action")
+            urgent = 0
+
+            if needs_action.exists():
+                for file in needs_action.glob("*.md"):
+                    content = file.read_text()
+                    if "urgent" in content.lower() or "priority: high" in content.lower():
+                        urgent += 1
+
+            return urgent
+        except Exception:
+            return 0
+
+    async def _get_top_suggestions(self) -> List[ProactiveSuggestion]:
+        """Get top proactive suggestions."""
+        # Return high-confidence recent suggestions
+        return sorted(
+            self.recent_suggestions,
+            key=lambda s: (s.priority, -s.confidence)
+        )[:5]
+
+    async def send_approval_notification(
+        self,
+        task_id: str,
+        task_title: str,
+        task_description: str,
+        risk_score: float,
+        complexity_score: float
+    ):
+        """
+        Send approval request notification for a task.
+
+        Called when Agentic Intelligence determines a task
+        needs user approval before execution.
+        """
+        if not self.enable_push or not self.push_service:
+            print(f"[ContextMonitor] Approval needed: {task_title} (push disabled)")
+            return
+
+        try:
+            result = await self.push_service.send_approval_request(
+                task_id=task_id,
+                task_title=task_title,
+                task_description=task_description,
+                risk_score=risk_score,
+                complexity_score=complexity_score
+            )
+
+            if result.get("sent", 0) > 0:
+                print(f"[ContextMonitor] 📱 Approval request sent for: {task_title}")
+            else:
+                print(f"[ContextMonitor] Approval not sent: {result.get('reason', 'unknown')}")
+
+        except Exception as e:
+            print(f"[ContextMonitor] Failed to send approval notification: {e}")
+
+    async def notify_task_completed(
+        self,
+        task_id: str,
+        task_title: str,
+        result_summary: str
+    ):
+        """Notify user that a task was completed."""
+        if not self.enable_push or not self.push_service:
+            return
+
+        try:
+            await self.push_service.send_task_completed(
+                task_id=task_id,
+                task_title=task_title,
+                result_summary=result_summary
+            )
+        except Exception as e:
+            print(f"[ContextMonitor] Failed to send completion notification: {e}")

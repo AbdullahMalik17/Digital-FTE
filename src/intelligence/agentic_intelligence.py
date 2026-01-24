@@ -1,6 +1,6 @@
 """
 Agentic Intelligence - Main decision-making engine.
-Layer 3: Decides how to handle tasks based on complexity and risk.
+Layer 3: Decides how to handle tasks based on complexity and risk. 
 """
 
 import asyncio
@@ -323,7 +323,7 @@ class AgenticIntelligence:
 
         # Header
         explanation.append(f"Agentic Intelligence Decision")
-        explanation.append(f"{'='*50}")
+        explanation.append(f"{ '='*50}")
 
         # Approach
         explanation.append(f"\nRecommended Approach: {decision.approach.value.upper()}")

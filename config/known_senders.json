@@ -17,31 +17,32 @@
   },
   "notifications@github.com": {
     "first_seen": "2026-01-17T20:23:55.453726",
-    "email_count": 23,
+    "email_count": 33,
     "importance_history": [
-      "not_important",
       "medium",
       "medium",
       "medium",
-      "not_important",
-      "not_important",
+      "medium",
+      "medium",
+      "medium",
       "medium",
       "medium",
       "not_important",
       "not_important"
     ],
-    "last_seen": "2026-01-22T12:29:48.193020"
+    "last_seen": "2026-01-23T21:12:08.636237"
   },
   "noreply@medium.com": {
     "first_seen": "2026-01-17T20:23:55.463380",
-    "email_count": 4,
+    "email_count": 5,
     "importance_history": [
+      "not_important",
       "not_important",
       "not_important",
       "not_important",
       "not_important"
     ],
-    "last_seen": "2026-01-22T12:29:48.206884"
+    "last_seen": "2026-01-23T21:12:08.620352"
   },
   "hello@news.railway.app": {
     "first_seen": "2026-01-17T20:23:55.472894",
@@ -80,40 +81,45 @@
   },
   "learn@send.zapier.com": {
     "first_seen": "2026-01-17T20:23:55.522683",
-    "email_count": 4,
+    "email_count": 5,
     "importance_history": [
+      "medium",
       "medium",
       "medium",
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T10:51:33.618933"
+    "last_seen": "2026-01-23T21:12:08.710425"
   },
   "newsletters-noreply@linkedin.com": {
     "first_seen": "2026-01-17T20:23:55.543317",
-    "email_count": 2,
+    "email_count": 4,
     "importance_history": [
       "medium",
-      "not_important"
+      "not_important",
+      "medium",
+      "medium"
     ],
-    "last_seen": "2026-01-19T22:58:48.137203"
+    "last_seen": "2026-01-23T21:07:11.382936"
   },
   "adam@uxpilot.ai": {
     "first_seen": "2026-01-17T20:23:55.603684",
-    "email_count": 1,
-    "importance_history": [
-      "medium"
-    ],
-    "last_seen": "2026-01-17T20:23:55.603684"
-  },
-  "messages-noreply@linkedin.com": {
-    "first_seen": "2026-01-17T21:19:07.007585",
     "email_count": 2,
     "importance_history": [
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-17T22:15:41.182710"
+    "last_seen": "2026-01-23T21:12:08.681075"
+  },
+  "messages-noreply@linkedin.com": {
+    "first_seen": "2026-01-17T21:19:07.007585",
+    "email_count": 3,
+    "importance_history": [
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-23T20:04:03.765561"
   },
   "google-cloud-compliance-noreply@google.com": {
     "first_seen": "2026-01-17T21:30:12.451430",
@@ -133,11 +139,15 @@
   },
   "hi@kilocode.ai": {
     "first_seen": "2026-01-19T22:58:48.129305",
-    "email_count": 1,
+    "email_count": 5,
     "importance_history": [
+      "medium",
+      "medium",
+      "medium",
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-19T22:58:48.129305"
+    "last_seen": "2026-01-23T21:07:11.536720"
   },
   "sarah@pdffiller.com": {
     "first_seen": "2026-01-19T22:58:48.147579",
@@ -174,22 +184,24 @@
   },
   "contact@mail.replit.com": {
     "first_seen": "2026-01-21T10:51:33.567800",
-    "email_count": 1,
+    "email_count": 2,
     "importance_history": [
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T10:51:33.567800"
+    "last_seen": "2026-01-23T21:36:23.750266"
   },
   "hello@notify.railway.app": {
     "first_seen": "2026-01-21T10:51:33.606928",
-    "email_count": 4,
+    "email_count": 5,
     "importance_history": [
+      "medium",
       "medium",
       "medium",
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T10:51:33.650212"
+    "last_seen": "2026-01-23T21:12:08.695996"
   },
   "no-reply@render.com": {
     "first_seen": "2026-01-21T10:51:33.640756",
@@ -230,19 +242,21 @@
   },
   "updates-noreply@linkedin.com": {
     "first_seen": "2026-01-21T10:51:33.700052",
-    "email_count": 1,
+    "email_count": 2,
     "importance_history": [
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T10:51:33.700052"
+    "last_seen": "2026-01-23T20:04:03.738606"
   },
   "team@mail.clickup.com": {
     "first_seen": "2026-01-21T12:19:02.387008",
-    "email_count": 1,
+    "email_count": 2,
     "importance_history": [
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T12:19:02.387685"
+    "last_seen": "2026-01-23T21:12:08.652020"
   },
   "billing-noreply@linkedin.com": {
     "first_seen": "2026-01-22T12:29:48.151448",
@@ -275,5 +289,88 @@
       "medium"
     ],
     "last_seen": "2026-01-22T12:29:48.200448"
+  },
+  "nickbaumann@info.cline.bot": {
+    "first_seen": "2026-01-23T20:04:03.743513",
+    "email_count": 4,
+    "importance_history": [
+      "medium",
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:07:11.424402"
+  },
+  "academy@learn.heygen.com": {
+    "first_seen": "2026-01-23T20:04:03.761296",
+    "email_count": 4,
+    "importance_history": [
+      "medium",
+      "medium",
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:07:11.552613"
+  },
+  "no-reply@email.claude.com": {
+    "first_seen": "2026-01-23T20:04:03.769136",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-23T20:04:03.769142"
+  },
+  "no-reply@accounts.google.com": {
+    "first_seen": "2026-01-23T20:04:03.773397",
+    "email_count": 4,
+    "importance_history": [
+      "important",
+      "important",
+      "important",
+      "important"
+    ],
+    "last_seen": "2026-01-23T21:07:11.565851"
+  },
+  "marketing@engage.canva.com": {
+    "first_seen": "2026-01-23T20:32:39.685968",
+    "email_count": 2,
+    "importance_history": [
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:12:08.566156"
+  },
+  "security-noreply@linkedin.com": {
+    "first_seen": "2026-01-23T20:55:45.832543",
+    "email_count": 2,
+    "importance_history": [
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:07:11.402459"
+  },
+  "Team@announce.fiverr.com": {
+    "first_seen": "2026-01-23T21:12:08.586345",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:12:08.586365"
+  },
+  "bart@news.n8n.io": {
+    "first_seen": "2026-01-23T21:12:08.666940",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:12:08.666956"
+  },
+  "googleaistudio-noreply@google.com": {
+    "first_seen": "2026-01-23T21:12:08.727975",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-23T21:12:08.727986"
   }
 }

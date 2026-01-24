@@ -4,6 +4,7 @@ import time
 import subprocess
 import signal
 import logging
+import shutil
 from pathlib import Path
 from datetime import datetime
 
@@ -21,6 +22,9 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("ServiceManager")
+
+# Determine NPM command
+NPM_CMD = "npm.cmd" if os.name == "nt" else "npm"
 
 SERVICES = {
     "watching-gmail": {
@@ -41,6 +45,12 @@ SERVICES = {
         "restart_delay": 10,
         "description": "WhatsApp Web monitor (Skill, requires browser)"
     },
+    "watching-linkedin": {
+        "command": [sys.executable, "src/watchers/linkedin_watcher.py"],
+        "cwd": str(BASE_DIR),
+        "restart_delay": 10,
+        "description": "LinkedIn notifications monitor (Playwright)"
+    },
     "digital-fte-orchestrator": {
         "command": [sys.executable, ".claude/skills/digital-fte-orchestrator/scripts/run.py"],
         "cwd": str(BASE_DIR),
@@ -52,6 +62,24 @@ SERVICES = {
         "cwd": str(BASE_DIR),
         "restart_delay": 60,
         "description": "Git-based vault synchronization (Platinum Tier)"
+    },
+    "odoo-mcp-server": {
+        "command": [sys.executable, "src/mcp_servers/odoo_server.py"],
+        "cwd": str(BASE_DIR),
+        "restart_delay": 10,
+        "description": "Odoo ERP MCP Server"
+    },
+    "email-mcp-server": {
+        "command": [sys.executable, "src/mcp_servers/email_sender.py"],
+        "cwd": str(BASE_DIR),
+        "restart_delay": 10,
+        "description": "Email Sending MCP Server"
+    },
+    "frontend-dashboard": {
+        "command": [NPM_CMD, "run", "dev"],
+        "cwd": str(BASE_DIR / "frontend"),
+        "restart_delay": 10,
+        "description": "Next.js Frontend Dashboard"
     }
 }
 
@@ -61,31 +89,61 @@ running = True
 def verify_skill(name):
     """Verify skill is properly configured before starting."""
     config = SERVICES[name]
-    skill_path = Path(config["command"][1])
+    
+    # Special handling for non-python/non-skill commands
+    if name == "frontend-dashboard":
+        # Check if npm is installed and package.json exists
+        if not (Path(config["cwd"]) / "package.json").exists():
+             logger.error(f"Frontend package.json not found in {config['cwd']}")
+             return False
+        return True
+        
+    skill_path = Path(config["command"][1] if len(config["command"]) > 1 else config["command"][0])
+
+    # For MCP servers running directly from src/mcp_servers, skip strict skill verification structure
+    if "src/mcp_servers" in str(skill_path) or "src/watchers" in str(skill_path):
+        if not skill_path.exists():
+             # Try relative to BASE_DIR if absolute path fails
+             skill_path = BASE_DIR / skill_path
+             if not skill_path.exists():
+                 logger.error(f"Script not found: {skill_path}")
+                 return False
+        return True
 
     # Check if skill script exists
     if not skill_path.exists():
-        logger.error(f"Skill script not found: {skill_path}")
-        return False
+        # Try relative to BASE_DIR if absolute path check failed (though config uses absolute usually?)
+        # Actually config["command"][1] is relative path string based on current code structure in SERVICES
+        # But we pass cwd=BASE_DIR, so subprocess finds it. 
+        # Here we need to check existence.
+        
+        # If it's a relative path in the config, prepend BASE_DIR
+        if not skill_path.is_absolute():
+            skill_path = BASE_DIR / skill_path
+            
+        if not skill_path.exists():
+            logger.error(f"Skill script not found: {skill_path}")
+            return False
 
-    # Check if verify.py exists and run it
-    verify_script = skill_path.parent / "verify.py"
-    if verify_script.exists():
-        try:
-            result = subprocess.run(
-                [sys.executable, str(verify_script)],
-                cwd=str(BASE_DIR),
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-            if result.returncode != 0:
-                logger.warning(f"Skill {name} verification failed: {result.stdout}")
-                return False
-            logger.info(f"Skill {name} verified successfully")
-        except Exception as e:
-            logger.warning(f"Could not verify skill {name}: {e}")
-            # Don't fail on verification error, just warn
+    # Check if verify.py exists and run it (Only for .claude/skills based services)
+    if ".claude/skills" in str(skill_path):
+        verify_script = skill_path.parent / "verify.py"
+        if verify_script.exists():
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(verify_script)],
+                    cwd=str(BASE_DIR),
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if result.returncode != 0:
+                    logger.warning(f"Skill {name} verification failed: {result.stdout}")
+                    return False
+                logger.info(f"Skill {name} verified successfully")
+            except Exception as e:
+                logger.warning(f"Could not verify skill {name}: {e}")
+                # Don't fail on verification error, just warn
 
     return True
 

@@ -7,6 +7,7 @@ import argparse
 import logging
 import shutil
 import re
+import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -17,6 +18,24 @@ from utils.audit_logger import log_audit, AuditDomain, AuditStatus
 # Import domain classification
 from utils.domain_classifier import classify_task, ClassificationConfidence
 from models.task import Task, TaskDomain, TaskPriority, TaskStatus, TaskSource
+
+# Import Agentic Intelligence Layer
+try:
+    from intelligence.agentic_intelligence import AgenticIntelligence
+    from intelligence.context_monitor import ContextMonitor
+    from models.enhancements.task_analysis import ApproachDecision
+    HAS_AGENTIC = True
+except ImportError:
+    HAS_AGENTIC = False
+    print("[Orchestrator] Agentic Intelligence not available")
+
+# Import Push Notifications
+try:
+    from notifications import get_push_service
+    HAS_PUSH = True
+except ImportError:
+    HAS_PUSH = False
+    print("[Orchestrator] Push Notifications not available")
 
 # Configuration
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -108,14 +127,16 @@ class DigitalFTEOrchestrator:
         self,
         max_iterations: int = DEFAULT_MAX_ITERATIONS,
         poll_interval: int = DEFAULT_POLL_INTERVAL,
-        dry_run: bool = False
+        dry_run: bool = False,
+        enable_agentic: bool = True,
+        enable_push: bool = True
     ):
         self.max_iterations = max_iterations
         self.poll_interval = poll_interval
         self.dry_run = dry_run
         self.iteration_count = 0
         self.processed_tasks = set()
-        
+
         # Verify agents
         self.available_agents = self._find_available_agents()
 
@@ -125,12 +146,40 @@ class DigitalFTEOrchestrator:
         # Load Company Handbook
         self.handbook = self._load_handbook()
 
+        # Initialize Agentic Intelligence Layer
+        self.agentic_intelligence = None
+        self.context_monitor = None
+        if enable_agentic and HAS_AGENTIC:
+            try:
+                self.agentic_intelligence = AgenticIntelligence(
+                    handbook_rules=self._parse_handbook_rules()
+                )
+                self.context_monitor = ContextMonitor(
+                    intelligence=self.agentic_intelligence,
+                    enable_push_notifications=enable_push and HAS_PUSH
+                )
+                logger.info("🧠 Agentic Intelligence Layer: ENABLED")
+            except Exception as e:
+                logger.warning(f"Could not initialize Agentic Intelligence: {e}")
+
+        # Initialize Push Notification Service
+        self.push_service = None
+        if enable_push and HAS_PUSH:
+            try:
+                self.push_service = get_push_service()
+                stats = self.push_service.get_subscription_count()
+                logger.info(f"📱 Push Notifications: ENABLED ({stats['active']} devices)")
+            except Exception as e:
+                logger.warning(f"Could not initialize Push Notifications: {e}")
+
         logger.info("=" * 60)
         logger.info("Digital FTE Orchestrator Initialized (Supervisor Mode)")
         logger.info(f"  Vault Path: {VAULT_PATH}")
         logger.info(f"  Poll Interval: {poll_interval}s")
         logger.info(f"  Dry Run: {dry_run}")
-        
+        logger.info(f"  Agentic: {'YES' if self.agentic_intelligence else 'NO'}")
+        logger.info(f"  Push: {'YES' if self.push_service else 'NO'}")
+
         if self.available_agents:
             names = [a['name'] for a in self.available_agents]
             logger.info(f"  Active Agents: {', '.join(names)}")
@@ -138,6 +187,25 @@ class DigitalFTEOrchestrator:
             logger.critical("  NO AGENTS FOUND! System cannot function.")
 
         logger.info("=" * 60)
+
+    def _parse_handbook_rules(self) -> Dict[str, Any]:
+        """Parse Company Handbook into structured rules."""
+        rules = {
+            "auto_approve_max_amount": 100,
+            "require_approval_external": True,
+            "require_approval_social": True
+        }
+
+        # Parse handbook for specific rules
+        if self.handbook:
+            if "auto-approve" in self.handbook.lower():
+                # Extract auto-approve limits
+                import re
+                match = re.search(r'auto-approve.*?\$(\d+)', self.handbook, re.IGNORECASE)
+                if match:
+                    rules["auto_approve_max_amount"] = int(match.group(1))
+
+        return rules
 
     def _find_available_agents(self):
         """Find all available AI agents on the system."""
@@ -354,7 +422,56 @@ JSON ONLY.
                 }
             )
 
-            complexity_info = self.detect_complexity(task_content, task_id)
+            # 🧠 AGENTIC INTELLIGENCE LAYER
+            # Use AI to decide: execute directly, create spec, or ask for clarification
+            agentic_decision = None
+            if self.agentic_intelligence:
+                try:
+                    agentic_decision = asyncio.get_event_loop().run_until_complete(
+                        self.agentic_intelligence.decide(task_content)
+                    )
+
+                    logger.info(f"🧠 Agentic Decision: {agentic_decision.approach.value}")
+                    logger.info(f"   Complexity: {agentic_decision.complexity.overall_score:.2f}")
+                    logger.info(f"   Risk: {agentic_decision.risk.overall_score:.2f}")
+                    logger.info(f"   Confidence: {agentic_decision.confidence:.2f}")
+
+                    # Log agentic decision
+                    log_audit(
+                        action="orchestrator.agentic_decision",
+                        actor="agentic_intelligence",
+                        domain=audit_domain,
+                        resource=task_id,
+                        status=AuditStatus.SUCCESS,
+                        details=agentic_decision.to_dict()
+                    )
+
+                    # Handle decision: send notifications if approval needed
+                    if agentic_decision.approval_required and self.context_monitor:
+                        logger.info("📱 Sending approval request notification...")
+                        asyncio.get_event_loop().run_until_complete(
+                            self.context_monitor.send_approval_notification(
+                                task_id=task_id,
+                                task_title=task_title,
+                                task_description=task_content[:200],
+                                risk_score=agentic_decision.risk.overall_score,
+                                complexity_score=agentic_decision.complexity.overall_score
+                            )
+                        )
+
+                except Exception as e:
+                    logger.warning(f"Agentic intelligence error: {e}")
+
+            # Use agentic complexity if available, otherwise fallback to legacy
+            if agentic_decision:
+                complexity_info = {
+                    'is_complex': agentic_decision.complexity.overall_score >= 0.7,
+                    'complexity_score': int(agentic_decision.complexity.overall_score * 10),
+                    'reasoning': agentic_decision.reasoning,
+                    'approach': agentic_decision.approach.value
+                }
+            else:
+                complexity_info = self.detect_complexity(task_content, task_id)
 
             if complexity_info['is_complex']:
                 logger.info(f"🎯 Complex task detected (score: {complexity_info['complexity_score']}/10)")
@@ -420,6 +537,20 @@ JSON ONLY.
                 status=AuditStatus.SUCCESS,
                 details={"agent": agent, "target": "Done"}
             )
+
+            # 📱 Send completion notification
+            if self.context_monitor:
+                try:
+                    asyncio.get_event_loop().run_until_complete(
+                        self.context_monitor.notify_task_completed(
+                            task_id=task_id,
+                            task_title=task_title if 'task_title' in dir() else task_id,
+                            result_summary=analysis[:100] if analysis else "Task completed successfully"
+                        )
+                    )
+                except Exception as e:
+                    logger.debug(f"Could not send completion notification: {e}")
+
             return True
         elif target_folder == "Pending_Approval":
             self._move_task(task_path, PENDING_APPROVAL_PATH)
@@ -823,32 +954,61 @@ Output ONLY the markdown plan above. Do not add any other text."""
     def run(self):
         """Main loop."""
         logger.info(f"Starting Digital FTE Orchestrator Loop (Role: {FTE_ROLE})...")
-        while True:
+
+        # Start Context Monitor in background for proactive suggestions
+        context_task = None
+        if self.context_monitor:
             try:
-                # 1. Process LinkedIn queue (Common)
-                self.process_linkedin_queue()
-
-                # 2. Process pending tasks (Triage - Cloud/Local)
-                pending = self.get_pending_tasks()
-                if pending:
-                    logger.info(f"Found {len(pending)} pending tasks in Needs_Action")
-                    for task in pending:
-                        self.process_task(task)
-
-                # 3. Local-Only Actions
-                if FTE_ROLE == "local":
-                    # Process approved tasks (Execution)
-                    self.process_approved_tasks()
-                    
-                    # Merge Cloud Updates
-                    self.process_updates()
-
-                time.sleep(self.poll_interval)
-            except KeyboardInterrupt:
-                break
+                loop = asyncio.get_event_loop()
+                context_task = loop.create_task(self.context_monitor.start())
+                logger.info("🧠 Context Monitor started in background")
             except Exception as e:
-                logger.error(f"Loop error: {e}")
-                time.sleep(10)
+                logger.warning(f"Could not start Context Monitor: {e}")
+
+        try:
+            while True:
+                try:
+                    # 1. Process LinkedIn queue (Common)
+                    self.process_linkedin_queue()
+
+                    # 2. Process pending tasks (Triage - Cloud/Local)
+                    pending = self.get_pending_tasks()
+                    if pending:
+                        logger.info(f"Found {len(pending)} pending tasks in Needs_Action")
+                        for task in pending:
+                            self.process_task(task)
+
+                    # 3. Local-Only Actions
+                    if FTE_ROLE == "local":
+                        # Process approved tasks (Execution)
+                        self.process_approved_tasks()
+
+                        # Merge Cloud Updates
+                        self.process_updates()
+
+                    # 4. Check for morning digest (9am daily)
+                    if self.context_monitor:
+                        hour = datetime.now().hour
+                        if hour == 9:
+                            try:
+                                asyncio.get_event_loop().run_until_complete(
+                                    self.context_monitor.send_daily_digest()
+                                )
+                            except Exception as e:
+                                logger.debug(f"Daily digest check: {e}")
+
+                    time.sleep(self.poll_interval)
+                except KeyboardInterrupt:
+                    break
+                except Exception as e:
+                    logger.error(f"Loop error: {e}")
+                    time.sleep(10)
+        finally:
+            # Stop context monitor on exit
+            if self.context_monitor:
+                self.context_monitor.stop()
+            if context_task:
+                context_task.cancel()
 
 def main():
     parser = argparse.ArgumentParser()
