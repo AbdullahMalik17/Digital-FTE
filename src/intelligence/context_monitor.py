@@ -15,6 +15,21 @@ from pathlib import Path
 from src.intelligence.agentic_intelligence import AgenticIntelligence
 from src.models.enhancements.task_analysis import ApproachDecision
 
+# Import integrations
+try:
+    from src.integrations.spotify_client import spotify_client
+    HAS_SPOTIFY = True
+except ImportError:
+    HAS_SPOTIFY = False
+    print("[ContextMonitor] Spotify client not available")
+
+try:
+    from src.bridges.mobile_bridge import mobile_bridge
+    HAS_MOBILE = True
+except ImportError:
+    HAS_MOBILE = False
+    print("[ContextMonitor] Mobile bridge not available")
+
 # Import push notification service
 try:
     from src.notifications import get_push_service, NotificationPayload
@@ -32,6 +47,8 @@ class ContextType(Enum):
     ACTIVITY = "activity"
     TIME_BASED = "time_based"
     PATTERN = "pattern"
+    SPOTIFY = "spotify"
+    MOBILE = "mobile"
 
 
 @dataclass
@@ -114,6 +131,8 @@ class ContextMonitor:
             ContextType.ACTIVITY: True,
             ContextType.TIME_BASED: True,
             ContextType.PATTERN: True,
+            ContextType.SPOTIFY: HAS_SPOTIFY,
+            ContextType.MOBILE: HAS_MOBILE,
         }
 
         # Recent suggestions (to avoid duplicates)
@@ -174,6 +193,12 @@ class ContextMonitor:
 
         if self.active_monitors[ContextType.PATTERN]:
             signals.extend(await self._monitor_patterns())
+            
+        if self.active_monitors[ContextType.SPOTIFY]:
+            signals.extend(await self._monitor_spotify())
+            
+        if self.active_monitors[ContextType.MOBILE]:
+            signals.extend(await self._monitor_mobile())
 
         # Generate suggestions from signals
         if signals:
@@ -186,6 +211,62 @@ class ContextMonitor:
                     await self._present_suggestion(suggestion)
         else:
             print("[Context Monitor] No signals detected")
+
+    async def _monitor_spotify(self) -> List[ContextSignal]:
+        """Monitor Spotify context for music suggestions."""
+        signals = []
+        if not HAS_SPOTIFY: return signals
+        
+        # Check current playback
+        playback = spotify_client.get_current_playback()
+        is_playing = playback and playback.get('is_playing')
+        
+        now = datetime.now()
+        hour = now.hour
+        
+        # Scenario 1: Deep Focus Time (e.g. 10am-12pm) and no music
+        if not is_playing and 10 <= hour < 12:
+            signals.append(ContextSignal(
+                type=ContextType.SPOTIFY,
+                trigger="focus_time_silence",
+                confidence=0.8,
+                metadata={
+                    "action": "play_playlist",
+                    "playlist": "Deep Focus",
+                    "reason": "It's prime focus time and no music is playing."
+                },
+                timestamp=now
+            ))
+            
+        return signals
+
+    async def _monitor_mobile(self) -> List[ContextSignal]:
+        """Monitor mobile device status."""
+        signals = []
+        if not HAS_MOBILE or not mobile_bridge.connected: return signals
+        
+        # Check battery
+        battery = mobile_bridge.get_battery_status()
+        level = int(battery.get('level', 100))
+        status = battery.get('status', 'Unknown')
+        
+        if level < 20 and status == "Discharging":
+            signals.append(ContextSignal(
+                type=ContextType.MOBILE,
+                trigger="low_battery",
+                confidence=0.95,
+                metadata={
+                    "action": "alert",
+                    "message": f"Phone battery is low ({level}%). Please plug it in.",
+                    "level": level
+                },
+                timestamp=datetime.now()
+            ))
+            
+        # Check notifications (simplified)
+        # In a real scenario, we'd process the list of notifications
+        
+        return signals
 
     async def _monitor_email(self) -> List[ContextSignal]:
         """
@@ -451,6 +532,48 @@ class ContextMonitor:
                 timestamp=datetime.now()
             )
 
+            return suggestion
+
+        if primary.type == ContextType.SPOTIFY:
+            # Spotify music suggestions
+            action = primary.metadata.get('action')
+            playlist = primary.metadata.get('playlist')
+            reason = primary.metadata.get('reason')
+            
+            suggestion = ProactiveSuggestion(
+                id=suggestion_id,
+                title=f"🎵 Play '{playlist}' Music",
+                description="Enhance your environment with music",
+                suggested_action=f"Play '{playlist}' on Spotify",
+                reasoning=[
+                    reason,
+                    f"Confidence: {confidence:.1%}"
+                ],
+                confidence=confidence,
+                priority=priority,
+                context_signals=signals,
+                timestamp=datetime.now()
+            )
+            return suggestion
+
+        if primary.type == ContextType.MOBILE:
+            # Mobile alerts (Battery, Notifications)
+            message = primary.metadata.get('message')
+            
+            suggestion = ProactiveSuggestion(
+                id=suggestion_id,
+                title="📱 Mobile Alert",
+                description=message,
+                suggested_action="Check your phone",
+                reasoning=[
+                    "Critical device status detected",
+                    f"Confidence: {confidence:.1%}"
+                ],
+                confidence=confidence,
+                priority=1, # Always high priority for alerts
+                context_signals=signals,
+                timestamp=datetime.now()
+            )
             return suggestion
 
         # Add more signal type handlers here
