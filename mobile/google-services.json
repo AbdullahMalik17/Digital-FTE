@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "mock-project-id",
-    "storage_bucket": "mock-project-id.appspot.com"
+    "project_number": "612117147720",
+    "project_id": "voice-assistant-17",
+    "storage_bucket": "voice-assistant-17.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:612117147720:android:7b9a7311ffb4bf9d70287d",
         "android_client_info": {
           "package_name": "com.abdullahjunior.mobile"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "mock-api-key"
+          "current_key": "AIzaSyD1D0i6atUIFGW5bBrkZxFwu-SPYHcJDis"
         }
       ],
       "services": {

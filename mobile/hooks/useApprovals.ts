@@ -10,8 +10,11 @@ export function useApprovals() {
   return useQuery({
     queryKey: ['approvals'],
     queryFn: async () => {
-      const response = await apiService.getTasks('Pending_Approval');
-      return response.data.tasks as Task[];
+      const response = await apiService.getPendingTasks();
+      return response.data.tasks.map((t: any) => ({
+        ...t,
+        created_at: t.created,
+      })) as Task[];
     },
     refetchInterval: 30000,
   });

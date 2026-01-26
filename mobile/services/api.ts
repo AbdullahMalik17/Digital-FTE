@@ -45,9 +45,9 @@ export const apiService = {
   getRecentActivity: (limit = 10) =>
     api.get('/api/activity', { params: { limit } }),
 
-  // Notifications
+  // Notifications (FCM for mobile)
   registerPush: (token: string, deviceName: string) =>
-    api.post('/api/notifications/subscribe', {
+    api.post('/api/notifications/subscribe/mobile', {
       fcm_token: token,
       device_name: deviceName,
       platform: Platform.OS,

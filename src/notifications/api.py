@@ -34,10 +34,17 @@ router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 
 
 class SubscriptionRequest(BaseModel):
-    """Request to register a push subscription."""
+    """Request to register a push subscription (Web Push)."""
     endpoint: str
     keys: Dict[str, str]  # Must contain p256dh and auth
     device_name: Optional[str] = None
+
+
+class MobileSubscriptionRequest(BaseModel):
+    """Request to register a mobile push subscription (FCM)."""
+    fcm_token: str
+    device_name: Optional[str] = None
+    platform: str = "android"  # android or ios
 
 
 class UnsubscribeRequest(BaseModel):
@@ -135,6 +142,46 @@ async def subscribe(request: SubscriptionRequest, req: Request):
         }
     else:
         raise HTTPException(status_code=500, detail="Failed to register subscription")
+
+
+@router.post("/subscribe/mobile")
+async def subscribe_mobile(request: MobileSubscriptionRequest, req: Request):
+    """
+    Register a mobile push subscription (FCM token).
+
+    Called by the mobile app when user enables notifications.
+    Uses FCM for both Android and iOS.
+    """
+    push_service = get_push_service()
+
+    # Get device name from request or user agent
+    device_name = request.device_name
+    if not device_name:
+        user_agent = req.headers.get("user-agent", "Unknown")
+        if "iPhone" in user_agent or "iPad" in user_agent:
+            device_name = "iOS Device"
+        elif "Android" in user_agent:
+            device_name = "Android Device"
+        else:
+            device_name = "Mobile Device"
+
+    # For mobile, the FCM token IS the endpoint
+    success = push_service.register_subscription(
+        endpoint=request.fcm_token,
+        keys={},  # FCM doesn't use VAPID keys
+        device_name=device_name,
+        platform=request.platform
+    )
+
+    if success:
+        return {
+            "success": True,
+            "message": f"Mobile subscription registered for {device_name}",
+            "device_name": device_name,
+            "platform": request.platform
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Failed to register mobile subscription")
 
 
 @router.post("/unsubscribe")

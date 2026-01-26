@@ -42,7 +42,12 @@ def init_firebase():
 
     # Method 3: Default file locations
     if not cred:
-        for path in ["config/firebase-service-account.json", "firebase-service-account.json"]:
+        search_paths = [
+            "config/firebase-service-account.json",
+            "firebase-service-account.json",
+            "config/voice-assistant-17-firebase-adminsdk-fbsvc-03a54eb01f.json"
+        ]
+        for path in search_paths:
             if Path(path).exists():
                 cred = credentials.Certificate(path)
                 logger.info(f"Firebase credentials loaded from {path}")
