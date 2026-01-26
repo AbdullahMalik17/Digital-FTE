@@ -10,6 +10,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better layer caching
@@ -22,9 +23,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 COPY config/.env.example ./config/.env.example
 COPY Vault/ ./Vault/
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create necessary directories
-RUN mkdir -p config/push_notifications Vault/Logs Vault/Needs_Action Vault/Pending_Approval Vault/Done
+RUN mkdir -p config/push_notifications Vault/Logs Vault/Needs_Action Vault/Pending_Approval Vault/Done /var/log/supervisor
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
@@ -39,5 +41,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
-# Run the API server
-CMD ["uvicorn", "src.api_server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run supervisor to start all processes
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
