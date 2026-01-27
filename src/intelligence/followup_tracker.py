@@ -104,11 +104,44 @@ class FollowUpTracker:
             storage_db: Database for persistent storage
             notification_service: Service for sending reminders
         """
-        self.storage = storage_db
+        if storage_db is None:
+            # Import here to avoid circular dependencies if any
+            from src.storage.json_db import JsonDB
+            self.storage = JsonDB("followups")
+        else:
+            self.storage = storage_db
+            
         self.notifications = notification_service
 
-        # In-memory follow-ups (would be in DB in production)
+        # Load active follow-ups from storage
         self.followups: Dict[str, FollowUpItem] = {}
+        self._load_followups()
+
+    def _load_followups(self):
+        """Load follow-ups from storage."""
+        if not self.storage:
+            return
+
+        stored_items = self.storage.get("items", [])
+        for item_data in stored_items:
+            try:
+                # Reconstruct FollowUpItem from dict
+                item = FollowUpItem(
+                    id=item_data['id'],
+                    type=FollowUpType(item_data['type']),
+                    title=item_data['title'],
+                    description=item_data['description'],
+                    due_date=datetime.fromisoformat(item_data['due_date']),
+                    priority=Priority(item_data['priority']),
+                    status=FollowUpStatus(item_data['status']),
+                    related_to=item_data.get('related_to'),
+                    context=item_data.get('context', {}),
+                    created_at=datetime.fromisoformat(item_data['created_at']),
+                    completed_at=datetime.fromisoformat(item_data['completed_at']) if item_data.get('completed_at') else None
+                )
+                self.followups[item.id] = item
+            except Exception as e:
+                print(f"[FollowUpTracker] Error loading item: {e}")
 
     def create_followup(
         self,
@@ -122,18 +155,6 @@ class FollowUpTracker:
     ) -> FollowUpItem:
         """
         Create a new follow-up item.
-
-        Args:
-            type: Type of follow-up
-            title: Brief title
-            description: Detailed description
-            due_date: When follow-up is due
-            priority: Priority level
-            related_to: Related item ID (meeting, email, etc.)
-            context: Additional context
-
-        Returns:
-            Created FollowUpItem
         """
         # Generate ID
         item_id = hashlib.md5(
@@ -157,8 +178,7 @@ class FollowUpTracker:
         self.followups[item_id] = followup
 
         # Store in database
-        if self.storage:
-            self._store_followup(followup)
+        self._store_followup(followup)
 
         return followup
 
@@ -172,8 +192,7 @@ class FollowUpTracker:
         followup.completed_at = datetime.now()
 
         # Update in database
-        if self.storage:
-            self._update_followup(followup)
+        self._update_followup(followup)
 
     def cancel_followup(self, followup_id: str):
         """Cancel a follow-up."""
@@ -184,9 +203,19 @@ class FollowUpTracker:
         followup.status = FollowUpStatus.CANCELLED
 
         # Update in database
-        if self.storage:
-            self._update_followup(followup)
+        self._update_followup(followup)
 
+    # ... [Skipping getters] ...
+
+    def _store_followup(self, followup: FollowUpItem):
+        """Store follow-up in database."""
+        if self.storage:
+            self.storage.upsert_item_in_list("items", followup.to_dict())
+
+    def _update_followup(self, followup: FollowUpItem):
+        """Update follow-up in database."""
+        if self.storage:
+            self.storage.upsert_item_in_list("items", followup.to_dict())
     def get_pending_followups(
         self,
         type: FollowUpType = None,
@@ -446,13 +475,13 @@ class FollowUpTracker:
 
     def _store_followup(self, followup: FollowUpItem):
         """Store follow-up in database."""
-        # TODO: Implement database storage
-        pass
+        if self.storage:
+            self.storage.upsert_item_in_list("items", followup.to_dict())
 
     def _update_followup(self, followup: FollowUpItem):
         """Update follow-up in database."""
-        # TODO: Implement database update
-        pass
+        if self.storage:
+            self.storage.upsert_item_in_list("items", followup.to_dict())
 
     def format_followup_list(
         self,

@@ -8,6 +8,9 @@ const AppConfig = {
   
   // App version
   VERSION: '1.0.0',
+
+  // Security
+  API_SECRET_KEY: '', // Set this in app settings or here for production
 };
 
 export default AppConfig;

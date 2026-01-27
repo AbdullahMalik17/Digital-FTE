@@ -16,7 +16,7 @@ from dataclasses import dataclass, field, asdict
 
 # Firebase Integration
 try:
-    from .firebase_config import init_firebase
+    from src.notifications.firebase_config import init_firebase
     HAS_FIREBASE = True
 except ImportError:
     HAS_FIREBASE = False
@@ -29,6 +29,14 @@ try:
 except ImportError:
     HAS_WEBPUSH = False
     print("[PushService] pywebpush not installed. Run: pip install pywebpush")
+
+# Telegram Integration
+try:
+    from src.notifications.telegram_bot import TelegramNotifier
+    HAS_TELEGRAM = True
+except ImportError as e:
+    HAS_TELEGRAM = False
+    print(f"[PushService] Telegram module not found or dependencies missing: {e}")
 
 
 @dataclass
@@ -125,6 +133,18 @@ class PushNotificationService:
             self.firebase_ready = init_firebase()
         else:
             self.firebase_ready = False
+
+        # Initialize Telegram
+        self.telegram = None
+        if HAS_TELEGRAM:
+            try:
+                self.telegram = TelegramNotifier()
+                # Initialize async loop if needed, but TelegramNotifier usually needs await. 
+                # We will handle calling it with await in the async methods.
+                if not self.telegram.token:
+                    self.telegram = None
+            except Exception as e:
+                print(f"[PushService] Failed to initialize Telegram: {e}")
 
         print(f"[PushService] Initialized with {len(self.subscriptions)} subscription(s)")
 
@@ -400,12 +420,28 @@ class PushNotificationService:
         if risk_score >= 0.7:
             icon_prefix = "🔴"
             require_interaction = True
+            priority_str = "urgent"
         elif risk_score >= 0.4:
             icon_prefix = "🟡"
             require_interaction = True
+            priority_str = "high"
         else:
             icon_prefix = "🟢"
             require_interaction = False
+            priority_str = "medium"
+
+        # Send via Telegram if available
+        if self.telegram:
+            try:
+                await self.telegram.send_approval_request(
+                    task_id=task_id,
+                    title=task_title,
+                    description=task_description,
+                    priority=priority_str
+                )
+                print(f"[PushService] Sent Telegram approval request for {task_id}")
+            except Exception as e:
+                print(f"[PushService] Failed to send Telegram approval: {e}")
 
         notification = NotificationPayload(
             title=f"{icon_prefix} Approval Needed: {task_title}",
@@ -437,6 +473,15 @@ class PushNotificationService:
         suggestions: List[str]
     ) -> Dict[str, Any]:
         """Send daily morning digest notification."""
+        
+        # Send via Telegram if available
+        if self.telegram:
+            try:
+                await self.telegram.send_digest(summary)
+                print(f"[PushService] Sent Telegram digest")
+            except Exception as e:
+                print(f"[PushService] Failed to send Telegram digest: {e}")
+
         body_parts = [summary]
         if urgent_count > 0:
             body_parts.append(f"🔴 {urgent_count} urgent item(s)")

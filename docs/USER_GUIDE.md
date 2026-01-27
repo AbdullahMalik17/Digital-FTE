@@ -66,11 +66,24 @@ Access at `http://localhost:3000`.
 
 ---
 
+## 🛡️ Privacy Controls
+
+### Gmail: The "NO_AI" Label
+To prevent the agent from reading specific sensitive emails:
+1.  Open Gmail.
+2.  Create a new label named **`NO_AI`**.
+3.  Apply this label to any email thread you want to hide.
+4.  **Result**: The agent will strictly ignore these emails (they won't even appear in the logs).
+
+---
+
 ## ☁️ Platinum Features (Cloud/Local)
 
-- **Cloud Mode**: Runs on a VPS (24/7). Monitors and Drafts.
-- **Local Mode**: Runs on your laptop. Approves and Executes.
-- **Sync**: Git-based sync keeps them in step every 5 minutes.
+- **Cloud Mode (Fly.io)**: Runs 24/7. Monitors Gmail/Files and creates Drafts.
+    - **Security**: Protected by `X-API-Key` authentication.
+    - **Secrets**: Credentials (like Gmail Token) are injected securely via Fly Secrets.
+- **Local Mode (Laptop)**: Runs when you work. Approves tasks and executes final actions (Payments, WhatsApp sending).
+- **Sync**: Git-based sync keeps both agents in step every 5 minutes.
 
 ---
 

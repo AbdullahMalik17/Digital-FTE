@@ -12,11 +12,28 @@ const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const storedUrl = await AsyncStorage.getItem('api_base_url');
+  const storedKey = await AsyncStorage.getItem('api_secret_key');
+  
   config.baseURL = storedUrl || DEFAULT_BASE_URL;
+  
+  // Add API Security Header
+  if (storedKey || Config.API_SECRET_KEY) {
+    config.headers['X-API-Key'] = storedKey || Config.API_SECRET_KEY;
+  }
+  
   return config;
 });
 
 export const apiService = {
+  // Auth/Settings
+  setApiKey: async (key: string) => {
+    await AsyncStorage.setItem('api_secret_key', key);
+  },
+
+  getApiKey: async () => {
+    return (await AsyncStorage.getItem('api_secret_key')) || Config.API_SECRET_KEY;
+  },
+
   // Dashboard
   getDashboard: () => api.get('/api/dashboard'),
 

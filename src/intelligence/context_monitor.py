@@ -11,6 +11,12 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+import json
+
+# Integration imports
+from src.watchers.gmail_watcher import get_gmail_service, fetch_unread_emails_count, get_recent_urgent_emails
+from src.mcp_servers.google_calendar_server import _list_events_logic
+from src.intelligence.user_activity import UserActivityTracker, ActivityType
 
 from src.intelligence.agentic_intelligence import AgenticIntelligence
 from src.models.enhancements.task_analysis import ApproachDecision
@@ -39,26 +45,12 @@ except ImportError:
     print("[ContextMonitor] Push notifications not available")
 
 
-class ContextType(Enum):
-    """Types of contexts to monitor."""
-    EMAIL = "email"
-    CALENDAR = "calendar"
-    NOTIFICATION = "notification"
-    ACTIVITY = "activity"
-    TIME_BASED = "time_based"
-    PATTERN = "pattern"
-    SPOTIFY = "spotify"
+# ContextType imported from src.models.context
     MOBILE = "mobile"
 
 
-@dataclass
-class ContextSignal:
-    """A signal detected from monitoring context."""
-    type: ContextType
-    trigger: str
-    confidence: float
-    metadata: Dict[str, Any]
-    timestamp: datetime
+# ContextSignal imported from src.models.context
+from src.models.context import ContextType, ContextSignal, SignalConfidence
 
 
 @dataclass
@@ -122,6 +114,9 @@ class ContextMonitor:
 
         # Push notification service
         self.push_service = get_push_service() if self.enable_push else None
+
+        # Activity Tracker
+        self.activity_tracker = UserActivityTracker()
 
         # Active monitors (can be enabled/disabled per context type)
         self.active_monitors = {
@@ -270,41 +265,101 @@ class ContextMonitor:
 
     async def _monitor_email(self) -> List[ContextSignal]:
         """
-        Monitor email context.
-
+        Monitor email context using real Gmail API.
+        
         Looks for:
         - Unread urgent emails
-        - Emails requiring response
-        - Follow-up opportunities
+        - Backlog size
         """
         signals = []
-
-        # TODO: Integrate with actual email API
-        # For now, this is a placeholder showing the logic
-
-        # Example signals (would come from real email checking):
-        # - Unread email from important contact
-        # - Email thread with no reply in 24h
-        # - Meeting invitation without response
+        
+        try:
+            # Connect to Gmail (this reuses the watcher's auth)
+            service = get_gmail_service()
+            
+            # 1. Check backlog
+            unread_count = fetch_unread_emails_count(service)
+            if unread_count > 20:
+                 signals.append(ContextSignal(
+                    type=ContextType.DIGITAL_ACTIVITY,
+                    content=f"Email backlog growing: {unread_count} unread messages",
+                    confidence=SignalConfidence.HIGH,
+                    source="gmail_monitor",
+                    timestamp=datetime.now(),
+                    metadata={"unread_count": unread_count, "suggestion": "Schedule email triage session"}
+                ))
+            
+            # 2. Check for urgent items
+            urgent_emails = get_recent_urgent_emails(service)
+            if urgent_emails:
+                for email in urgent_emails:
+                     headers = {h['name']: h['value'] for h in email['payload']['headers']}
+                     subject = headers.get('Subject', 'No Subject')
+                     sender = headers.get('From', 'Unknown')
+                     
+                     signals.append(ContextSignal(
+                        type=ContextType.COMMUNICATION,
+                        content=f"Urgent email from {sender}: {subject}",
+                        confidence=SignalConfidence.HIGH,
+                        source="gmail_monitor",
+                        timestamp=datetime.now(),
+                        metadata={"sender": sender, "subject": subject, "priority": "urgent"}
+                    ))
+                    
+        except Exception as e:
+            print(f"[ContextMonitor] Email check failed: {e}")
+            # Don't crash full monitor, just log error
 
         return signals
 
     async def _monitor_calendar(self) -> List[ContextSignal]:
         """
-        Monitor calendar context.
+        Monitor calendar context using real Google Calendar API.
 
         Looks for:
         - Upcoming meetings (preparation time)
         - Scheduling conflicts
-        - Follow-up opportunities after meetings
         """
         signals = []
 
-        # TODO: Integrate with calendar API
-        # Example signals:
-        # - Meeting in 15 minutes without agenda
-        # - Back-to-back meetings (suggest break)
-        # - Meeting ended 1h ago (suggest follow-up)
+        try:
+            # Use the logic directly from the MCP server to avoid HTTP overhead
+            # We fetch next 3 events
+            events_json = _list_events_logic(max_results=3)
+            events = json.loads(events_json)
+            
+            if isinstance(events, list) and events:
+                now = datetime.utcnow()
+                
+                for event in events:
+                    start_str = event.get('start')
+                    if not start_str: continue
+                    
+                    # Parse start time (handling potential 'Z' or offset)
+                    try:
+                        start_time = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+                        # Convert to naive if needed for comparison (simplified)
+                        if start_time.tzinfo:
+                            start_time = start_time.replace(tzinfo=None)
+                            
+                        # Check if within next 30 minutes
+                        time_diff = (start_time - now).total_seconds() / 60
+                        
+                        if 0 <= time_diff <= 30:
+                             signals.append(ContextSignal(
+                                type=ContextType.SCHEDULE,
+                                content=f"Upcoming meeting in {int(time_diff)}m: {event.get('summary')}",
+                                confidence=SignalConfidence.HIGH,
+                                source="calendar_monitor",
+                                timestamp=datetime.now(),
+                                metadata={"event": event}
+                            ))
+                            
+                    except ValueError:
+                        pass # Ignore parsing errors for now
+                        
+        except Exception as e:
+             print(f"[ContextMonitor] Calendar check failed: {e}")
 
         return signals
 
@@ -333,16 +388,44 @@ class ContextMonitor:
 
         Looks for:
         - Work/break patterns
-        - Focus time vs meeting time
-        - Energy levels (inferred from activity)
+        - Focus time vs meeting time (detected via density of events)
         """
         signals = []
 
-        # TODO: Track activity patterns
-        # Example signals:
-        # - 2h of coding (suggest break)
-        # - Deep work period ending (suggest task completion)
-        # - Low activity period (suggest task review)
+        if not self.active_monitors.get(ContextType.ACTIVITY):
+            return signals
+
+        try:
+            # Check current session duration
+            duration = self.activity_tracker.analyze_session_duration()
+            
+            if duration > 2.0: # 2 hours active
+                 signals.append(ContextSignal(
+                    type=ContextType.ACTIVITY,
+                    content=f"Continuous activity for {duration:.1f} hours",
+                    confidence=SignalConfidence.MEDIUM,
+                    source="activity_tracker",
+                    timestamp=datetime.now(),
+                    metadata={
+                        "duration": duration,
+                        "suggestion": "Take a 15 min break"
+                    }
+                ))
+            elif duration > 3.0: # 3 hours
+                 signals.append(ContextSignal(
+                    type=ContextType.ACTIVITY,
+                    content=f"Long session detected ({duration:.1f}h)",
+                    confidence=SignalConfidence.HIGH,
+                    source="activity_tracker",
+                    timestamp=datetime.now(),
+                    metadata={
+                        "duration": duration,
+                        "suggestion": "Urgent break recommended"
+                    }
+                ))
+
+        except Exception as e:
+            print(f"[ContextMonitor] Activity check failed: {e}")
 
         return signals
 
@@ -417,22 +500,36 @@ class ContextMonitor:
     async def _monitor_patterns(self) -> List[ContextSignal]:
         """
         Monitor learned patterns from history.
-
-        Looks for:
-        - Recurring task patterns
-        - Context similarities with past successful actions
-        - User preference patterns
         """
         signals = []
 
-        if not self.learning_db:
+        if not self.active_monitors.get(ContextType.PATTERN):
             return signals
 
-        # TODO: Analyze learned patterns
-        # Example signals:
-        # - Usually sends report at this time
-        # - Often schedules team meeting on Mondays
-        # - Typical post-meeting workflow
+        try:
+            # Analyze today's summary
+            summary = self.activity_tracker.get_daily_summary()
+            total_actions = sum(summary.values())
+            
+            # Simple pattern: High productivity day
+            if total_actions > 50:
+                signals.append(ContextSignal(
+                    type=ContextType.PATTERN,
+                    content=f"High productivity flow detected ({total_actions} actions)",
+                    confidence=SignalConfidence.MEDIUM,
+                    source="activity_tracker",
+                    timestamp=datetime.now(),
+                    metadata={
+                        "total_actions": total_actions,
+                        "suggestion": "Log reflections on what worked well"
+                    }
+                ))
+                
+            # Pattern: Task switching (too many different types)
+            # (Simplified check: if we had granular task types, we'd check variety)
+            
+        except Exception as e:
+            print(f"[ContextMonitor] Pattern check failed: {e}")
 
         return signals
 
@@ -480,7 +577,7 @@ class ContextMonitor:
         groups: Dict[str, List[ContextSignal]] = {}
 
         for signal in signals:
-            key = f"{signal.type.value}_{signal.trigger}"
+            key = f"{signal.type.value}_{signal.content}"
             if key not in groups:
                 groups[key] = []
             groups[key].append(signal)
@@ -510,7 +607,7 @@ class ContextMonitor:
             priority = 4
 
         # Build suggestion based on signal type
-        suggestion_id = f"{primary.type.value}_{primary.trigger}_{primary.timestamp.timestamp()}"
+        suggestion_id = f"{primary.type.value}_{primary.content}_{primary.timestamp.timestamp()}"
 
         if primary.type == ContextType.TIME_BASED:
             # Time-based suggestions (daily routines)
@@ -518,11 +615,11 @@ class ContextMonitor:
 
             suggestion = ProactiveSuggestion(
                 id=suggestion_id,
-                title=f"{primary.trigger.replace('_', ' ').title()}",
+                title=f"{primary.content.replace('_', ' ').title()}",
                 description=f"It's {primary.metadata.get('time', 'time')} - suggested routine",
                 suggested_action="\n".join(f"- {action}" for action in actions),
                 reasoning=[
-                    f"Detected {primary.trigger} pattern",
+                    f"Detected {primary.content} pattern",
                     f"Confidence: {confidence:.1%}",
                     f"Based on time-based triggers"
                 ],
@@ -694,7 +791,7 @@ class ContextMonitor:
                 # Record approval pattern for learning
                 context = {
                     'type': suggestion.context_signals[0].type.value if suggestion.context_signals else 'unknown',
-                    'trigger': suggestion.context_signals[0].trigger if suggestion.context_signals else 'unknown',
+                    'trigger': suggestion.context_signals[0].content if suggestion.context_signals else 'unknown',
                     'confidence': suggestion.confidence
                 }
 

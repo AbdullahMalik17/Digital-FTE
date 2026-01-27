@@ -45,6 +45,8 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).parent.parent
 VAULT_PATH = PROJECT_ROOT / "Vault"
 
+# Security Configuration
+API_SECRET_KEY = os.getenv("API_SECRET_KEY", "default-dev-key-change-me")
 
 # Initialize FastAPI
 app = FastAPI(
@@ -70,6 +72,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security Middleware
+@app.middleware("http")
+async def verify_api_key(request: Request, call_next):
+    # Allow health checks and public endpoints without auth
+    if request.url.path in ["/", "/api/health", "/docs", "/openapi.json"]:
+        return await call_next(request)
+    
+    # Allow OPTIONS requests (CORS preflight)
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
+    # Check for API Key
+    api_key = request.headers.get("X-API-Key")
+    if not api_key or api_key != API_SECRET_KEY:
+        # Development mode bypass (optional, remove in production)
+        if API_SECRET_KEY == "default-dev-key-change-me" and request.client.host == "127.0.0.1":
+             return await call_next(request)
+             
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid or missing API Key"}
+        )
+
+    return await call_next(request)
 
 # Mount notification routes
 if notifications_router:
@@ -124,6 +151,91 @@ async def transcribe_voice(request: Request):
         "action_taken": "task_drafted"
     }
 
+
+# ==================== WhatsApp Webhook ====================
+
+@app.get("/webhooks/whatsapp")
+async def verify_whatsapp_webhook(request: Request):
+    """
+    Verify webhook for WhatsApp Cloud API.
+    """
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
+
+    verify_token = os.getenv("WHATSAPP_VERIFY_TOKEN", "my_secure_token")
+
+    if mode == "subscribe" and token == verify_token:
+        return int(challenge)
+    
+    raise HTTPException(status_code=403, detail="Verification failed")
+
+@app.post("/webhooks/whatsapp")
+async def handle_whatsapp_webhook(request: Request):
+    """
+    Handle incoming WhatsApp messages.
+    """
+    try:
+        body = await request.json()
+        
+        # Check if this is a message status update (sent/delivered/read)
+        # We generally ignore these for now to reduce noise
+        entry = body.get("entry", [])
+        if entry and entry[0].get("changes", [])[0].get("value", {}).get("statuses"):
+             return {"status": "ignored_status_update"}
+
+        # Extract message content
+        if entry:
+            changes = entry[0].get("changes", [])
+            if changes:
+                value = changes[0].get("value", {})
+                messages = value.get("messages", [])
+                
+                if messages:
+                    msg = messages[0]
+                    sender = msg.get("from")
+                    text_body = msg.get("text", {}).get("body", "")
+                    msg_type = msg.get("type")
+                    
+                    if msg_type == "text":
+                        # Create a task for this message
+                        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                        task_id = f"WHATSAPP_{timestamp}_{sender}"
+                        task_file = VAULT_PATH / "Needs_Action" / f"{task_id}.md"
+                        
+                        content = f"""# 💬 WhatsApp: {sender}
+
+## Metadata
+- **Source:** WhatsApp Cloud API
+- **From:** {sender}
+- **Time:** {datetime.now().isoformat()}
+- **Priority:** MEDIUM
+
+---
+
+## Message
+{text_body}
+
+---
+
+## Actions
+- [ ] Reply
+- [ ] Archive
+"""
+                        task_file.write_text(content, encoding='utf-8')
+                        
+                        # Trigger Auto-Reply if enabled
+                        # (Implementation depends on the WhatsAppClient we just created)
+                        # from src.integrations.whatsapp_api import WhatsAppClient
+                        # client = WhatsAppClient()
+                        # client.send_message(sender, "Received!")
+
+        return {"status": "processed"}
+        
+    except Exception as e:
+        print(f"Error processing webhook: {e}")
+        # Return 200 to acknowledge receipt anyway so Meta doesn't retry
+        return {"status": "error", "detail": str(e)}
 
 # ==================== Endpoints ====================
 

@@ -78,7 +78,7 @@ IMPORTANCE_KEYWORDS = {
 }
 
 # Auto-reply configuration
-AUTO_REPLY_ENABLED = os.getenv("AUTO_REPLY_ENABLED", "false").lower() == "true"
+AUTO_REPLY_ENABLED = os.getenv("AUTO_REPLY_ENABLED", "true").lower() == "true"
 AUTO_REPLY_IMPORTANT_ONLY = True  # Only auto-reply to important emails
 
 # Known sender domains (for importance scoring)
@@ -121,6 +121,17 @@ def get_gmail_service():
     # Load existing token
     if TOKEN_FILE.exists():
         creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+    elif os.getenv("GMAIL_TOKEN_BASE64"):
+        # Cloud/CI Environment: Decode token from environment variable
+        logger.info("Decoding GMAIL_TOKEN_BASE64 from environment...")
+        try:
+            token_json = base64.b64decode(os.getenv("GMAIL_TOKEN_BASE64")).decode('utf-8')
+            with open(TOKEN_FILE, 'w') as token:
+                token.write(token_json)
+            creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
+            logger.info("Successfully loaded credentials from environment")
+        except Exception as e:
+            logger.error(f"Failed to decode GMAIL_TOKEN_BASE64: {e}")
 
     # Refresh or get new credentials
     if not creds or not creds.valid:
@@ -267,33 +278,27 @@ def generate_auto_reply(subject: str, sender: str, importance: str) -> str:
     if '<' in sender:
         sender_name = sender[:sender.find('<')].strip()
 
-    reply_templates = {
-        "important": f"""Hi {sender_name},
+    if importance == "important":
+        # Simple, direct acknowledgment for Urgent emails
+        return f"""Hi {sender_name},
 
-Thank you for your message regarding "{subject}".
+I have received your email regarding "{subject}" and marked it as URGENT.
 
-I've received your email and marked it as high priority. I'm reviewing it now and will respond with a detailed reply within the next hour.
+I have notified Abdullah Junior immediately. We will get back to you as soon as possible.
 
-If this is extremely urgent, please feel free to call me directly.
+Best,
+Abdullah Junior's AI Agent"""
 
-Best regards,
-Abdullah Junior
-(Automated Response - Digital FTE)""",
+    else:
+        # Standard receipt for Medium/Low (only used if explicitly triggered)
+        return f"""Hi {sender_name},
 
-        "medium": f"""Hi {sender_name},
+Received your email: "{subject}".
 
-Thank you for your email about "{subject}".
+I have added this to my review queue and will respond shortly if needed.
 
-I've received your message and will review it shortly. You can expect a response within 24 hours.
-
-If this requires immediate attention, please reply with "URGENT" in the subject line.
-
-Best regards,
-Abdullah Junior
-(Automated Response - Digital FTE)"""
-    }
-
-    return reply_templates.get(importance, reply_templates["medium"])
+Best,
+Abdullah Junior's AI Agent"""
 
 
 def send_auto_reply(service, email_data: Dict[str, Any], importance: str) -> bool:
@@ -522,6 +527,23 @@ def save_processed_ids(ids: set):
         json.dump(list(ids), f)
 
 
+def fetch_unread_emails_count(service) -> int:
+    """
+    Get count of unread emails.
+    Useful for context monitoring.
+    """
+    try:
+        results = service.users().messages().list(
+            userId='me',
+            q='is:unread in:inbox',
+            maxResults=1
+        ).execute()
+        return results.get('resultSizeEstimate', 0)
+    except HttpError as error:
+        logger.error(f"Gmail API error: {error}")
+        return 0
+
+
 def fetch_new_emails(service) -> List[Dict[str, Any]]:
     """Fetch new unread emails, excluding NO_AI labeled ones."""
     try:
@@ -562,6 +584,40 @@ def fetch_new_emails(service) -> List[Dict[str, Any]]:
 
         return new_emails
 
+    except HttpError as error:
+        logger.error(f"Gmail API error: {error}")
+        return []
+
+def get_recent_urgent_emails(service, hours: int = 24) -> List[Dict[str, Any]]:
+    """
+    Fetching recent important emails for context monitoring.
+    Does NOT mark them as processed.
+    """
+    try:
+        # Calculate time query
+        # after:YYYY/MM/DD
+        # This is a rough approximate for now
+        
+        results = service.users().messages().list(
+            userId='me',
+            q='is:unread label:IMPORTANT',
+            maxResults=5
+        ).execute()
+        
+        messages = results.get('messages', [])
+        urgent_emails = []
+        
+        for msg in messages:
+            full_msg = service.users().messages().get(
+                userId='me',
+                id=msg['id'],
+                format='metadata',
+                metadataHeaders=['Subject', 'From', 'Date']
+            ).execute()
+            urgent_emails.append(full_msg)
+            
+        return urgent_emails
+        
     except HttpError as error:
         logger.error(f"Gmail API error: {error}")
         return []
@@ -643,16 +699,22 @@ def main():
                 # Create task file
                 filepath = create_task_file(email, importance)
 
-                # Handle auto-reply for important emails
-                draft_id = None
-                if filepath and importance == "important":
+                # Policy Enforcement
+                # 1. URGENT/IMPORTANT: Send simple auto-reply immediately & Notify
+                if importance == "important":
                     if AUTO_REPLY_ENABLED:
-                        # Create draft for approval (safer than auto-send)
-                        draft_id = create_auto_reply_draft(service, email, importance)
-                        if draft_id:
-                            logger.info(f"✉️  Auto-reply draft created (ID: {draft_id})")
-                    else:
-                        logger.info(f"⏭️  Auto-reply disabled - skipping draft creation")
+                        logger.info(f"🔴 URGENT Email detected: Sending immediate auto-acknowledgment to {sender}")
+                        sent_success = send_auto_reply(service, email, importance)
+                        if sent_success:
+                            # Update task file to reflect action taken
+                            with open(filepath, 'a', encoding='utf-8') as f:
+                                f.write("\n\n## ⚡ Automated Action Taken\n")
+                                f.write(f"- **Auto-Reply Sent:** {datetime.now().isoformat()}\n")
+                                f.write("- **Notification:** Sent to Mobile App\n")
+                    
+                # 2. MEDIUM/LOW: Do NOT auto-reply. Ask user for next steps.
+                else:
+                    logger.info(f"⚪ {importance.upper()} Email: Created task for user decision (No auto-reply)")
 
                 if filepath:
                     processed_ids.add(msg_id)
@@ -662,7 +724,7 @@ def main():
                         "sender": sender,
                         "importance": importance,
                         "task_file": str(filepath),
-                        "auto_reply_draft": draft_id,
+                        "auto_reply_sent": (importance == "important" and AUTO_REPLY_ENABLED),
                         "result": "success"
                     })
 

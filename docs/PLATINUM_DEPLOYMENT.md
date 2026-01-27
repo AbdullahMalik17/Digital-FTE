@@ -4,7 +4,7 @@ This guide explains how to set up the Digital FTE in a production-ish configurat
 
 ## Architecture
 
-- **Cloud VM**: Runs 24/7. Monitors sensors (Gmail, FS, etc.). Triages tasks and drafts replies.
+- **Cloud VM / Fly.io**: Runs 24/7. Monitors sensors (Gmail, FS, etc.). Triages tasks and drafts replies.
 - **Local Machine**: User's laptop. Processes approvals, executes final actions, manages WhatsApp session.
 - **Sync**: Git-based Obsidian Vault synchronization.
 
@@ -68,6 +68,20 @@ This guide explains how to set up the Digital FTE in a production-ish configurat
 - **Secrets**: `.env` and `credentials.json` are in `.gitignore`. They MUST be manually configured on each machine.
 - **Sync Interval**: Defaults to 5 minutes (`SYNC_INTERVAL=300`).
 - **Claim-by-Move**: Orchestrator automatically moves tasks from `Needs_Action` to its specific `In_Progress` subfolder to prevent double-work.
+
+## 6. Security Hardening (Critical)
+
+### A. API Key Protection
+The Cloud Agent's API is protected by a secret key to prevent unauthorized access.
+1.  **Generate Key** (Local): `openssl rand -hex 16`
+2.  **Set Secret** (Cloud): `fly secrets set API_SECRET_KEY=your_generated_key`
+3.  **Configure Mobile App**: Update the app settings to send header `X-API-Key: your_generated_key`.
+
+### B. Gmail Cloud Access
+To allow the Cloud Agent to read emails without a browser:
+1.  **Encode Token** (Local): `python -c "import base64; print(base64.b64encode(open('config/token.json', 'rb').read()).decode())"`
+2.  **Set Secret** (Cloud): `fly secrets set GMAIL_TOKEN_BASE64=your_base64_string`
+3.  **Result**: The agent decodes this in memory to authenticate with Google.
 
 ---
 *Digital FTE Platinum Tier Configuration*

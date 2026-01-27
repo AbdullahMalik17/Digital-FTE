@@ -41,6 +41,7 @@ env/
 .env.production
 config/credentials.json
 config/token.json
+config/api_key.txt
 config/.env
 config/.env.local
 config/.env.cloud
@@ -60,7 +61,7 @@ credentials/
 config/processed_emails.json
 config/hook_state.json
 config/current_prompt.txt
-config 
+/config 
 # Logs
 Vault/Logs/*.json
 Vault/Logs/*.log

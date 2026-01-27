@@ -46,6 +46,7 @@ pydantic>=2.5.0
 
 # Markdown processing (for LinkedIn scheduler)
 python-frontmatter>=1.0.0
+linkedin-api>=2.0.0
 
 # Testing
 pytest>=7.4.0
