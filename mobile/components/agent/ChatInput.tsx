@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity } from 'react-native';
-import { Send, Mic } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Send, Mic, Square } from 'lucide-react-native';
+import { Audio } from 'expo-av';
 import { cn } from '../../utils/cn';
 
 interface ChatInputProps {
@@ -10,6 +11,60 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [text, setText] = useState('');
+  const [recording, setRecording] = useState<Audio.Recording>();
+  const [isRecording, setIsRecording] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (recording) {
+        recording.stopAndUnloadAsync();
+      }
+    };
+  }, [recording]);
+
+  const startRecording = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission needed', 'Microphone permission is required to record voice messages.');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(recording);
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+      Alert.alert('Error', 'Failed to start recording.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    setIsRecording(false);
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI(); 
+      setRecording(undefined);
+      
+      // In a real app, we would upload 'uri' to /api/voice/transcribe
+      // For this demo, we'll simulate a transcription
+      if (uri) {
+        onSend("[Voice Message Transcribed]: Please schedule a meeting for tomorrow.");
+      }
+    } catch (err) {
+      console.error('Failed to stop recording', err);
+    }
+  };
 
   const handleSend = () => {
     if (text.trim() && !disabled) {
@@ -18,34 +73,53 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     }
   };
 
+  const handleMicPress = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   return (
     <View className="flex-row items-center p-3 bg-card border-t border-border">
       <View className="flex-1 flex-row items-center bg-secondary rounded-full px-4 py-2 mr-2">
         <TextInput
           className="flex-1 text-foreground max-h-24 text-base"
-          placeholder="Message Abdullah Junior..."
-          placeholderTextColor="#94A3B8"
+          placeholder={isRecording ? "Recording..." : "Message Abdullah Junior..."}
+          placeholderTextColor={isRecording ? "#EF4444" : "#94A3B8"}
           value={text}
           onChangeText={setText}
           multiline
           maxLength={500}
-          editable={!disabled}
+          editable={!disabled && !isRecording}
         />
       </View>
-      <TouchableOpacity
-        onPress={handleSend}
-        disabled={!text.trim() || disabled}
-        className={cn(
-          'h-10 w-10 rounded-full items-center justify-center',
-          text.trim() && !disabled ? 'bg-primary' : 'bg-secondary'
-        )}
-      >
-        {text.trim() ? (
+      
+      {text.trim() ? (
+        <TouchableOpacity
+          onPress={handleSend}
+          disabled={disabled}
+          className="h-10 w-10 rounded-full items-center justify-center bg-primary"
+        >
           <Send size={20} color="white" />
-        ) : (
-          <Mic size={20} color="#94A3B8" />
-        )}
-      </TouchableOpacity>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          onPress={handleMicPress}
+          disabled={disabled}
+          className={cn(
+            'h-10 w-10 rounded-full items-center justify-center',
+            isRecording ? 'bg-red-500' : 'bg-secondary'
+          )}
+        >
+          {isRecording ? (
+            <Square size={20} color="white" />
+          ) : (
+            <Mic size={20} color="#94A3B8" />
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

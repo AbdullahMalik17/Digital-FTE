@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Switch, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -8,7 +9,7 @@ import { Input } from '../../components/ui/Input';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useToast } from '../../context/ToastContext';
 import * as Clipboard from 'expo-clipboard';
-import { Moon, Sun, Monitor, Server, Bell, Shield, Copy } from 'lucide-react-native';
+import { Moon, Sun, Monitor, Server, Bell, Shield, Copy, Brain, ChevronRight } from 'lucide-react-native';
 import { apiService } from '../../services/api';
 
 export default function SettingsScreen() {
@@ -35,6 +36,24 @@ export default function SettingsScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="p-4" contentContainerStyle={{ paddingBottom: 40 }}>
         <Text className="text-3xl font-bold text-foreground mb-6">Settings</Text>
+
+        <Text className="text-sm font-semibold text-muted-foreground uppercase mb-2 ml-1">
+          Agent
+        </Text>
+        <Card className="mb-6">
+          <CardContent className="p-0">
+            <TouchableOpacity
+              onPress={() => router.push('/skills')}
+              className="flex-row items-center justify-between p-4"
+            >
+              <View className="flex-row items-center">
+                <Brain size={20} color="#94A3B8" className="mr-3" />
+                <Text className="text-foreground">Agent Skills</Text>
+              </View>
+              <ChevronRight size={20} color="#64748B" />
+            </TouchableOpacity>
+          </CardContent>
+        </Card>
 
         <Text className="text-sm font-semibold text-muted-foreground uppercase mb-2 ml-1">
           Appearance

@@ -412,6 +412,44 @@ async def reject_task(task_id: str):
     return await approve_task(task_id, TaskApprovalRequest(approved=False))
 
 
+@app.get("/api/skills")
+async def get_skills():
+    """Get available agent skills."""
+    return {
+        "skills": [
+            { 
+                "name": "Gmail Watcher", 
+                "description": "Monitors inbox for urgent emails and drafts replies.", 
+                "category": "Communication",
+                "status": "active"
+            },
+            { 
+                "name": "WhatsApp Cloud", 
+                "description": "24/7 monitoring of WhatsApp messages via Meta Cloud API.", 
+                "category": "Communication",
+                "status": "active"
+            },
+            { 
+                "name": "LinkedIn Poster", 
+                "description": "Schedules and posts content to LinkedIn automatically.", 
+                "category": "Social",
+                "status": "active"
+            },
+            { 
+                "name": "Financial Analyst", 
+                "description": "Tracks revenue and expenses from Odoo.", 
+                "category": "Finance",
+                "status": "active"
+            },
+            { 
+                "name": "System Orchestrator", 
+                "description": "Manages task flow and approvals.", 
+                "category": "Core",
+                "status": "active"
+            }
+        ]
+    }
+
 @app.get("/api/drafts/count")
 async def get_drafts_count():
     """Get count of drafts needing approval (for periodic sync)."""

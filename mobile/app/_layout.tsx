@@ -9,6 +9,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
 import { OfflineBanner } from '../components/shared/OfflineBanner';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { BiometricGuard } from '../components/auth/BiometricGuard';
 
 const queryClient = new QueryClient();
 
@@ -19,13 +20,16 @@ function AppContent() {
   useOfflineQueue();
 
   return (
-    <View className="flex-1 bg-background">
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-      <OfflineBanner />
-      <StatusBar style="light" />
-    </View>
+    <BiometricGuard>
+      <View className="flex-1 bg-background">
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="skills" options={{ title: 'Agent Skills', headerShown: true, headerBackTitle: 'Back' }} />
+        </Stack>
+        <OfflineBanner />
+        <StatusBar style="light" />
+      </View>
+    </BiometricGuard>
   );
 }
 

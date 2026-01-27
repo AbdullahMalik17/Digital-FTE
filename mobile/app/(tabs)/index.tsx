@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, AlertCircle } from 'lucide-react-native';
 import { useDashboard } from '../../hooks/useDashboard';
@@ -7,6 +7,7 @@ import { StatsCard } from '../../components/dashboard/StatsCard';
 import { AgentStatusCard } from '../../components/dashboard/AgentStatusCard';
 import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
 import { Skeleton } from '../../components/ui/LoadingSkeleton';
+import { router } from 'expo-router';
 
 export default function DashboardScreen() {
   const { data, isLoading, refetch, isRefetching } = useDashboard();
@@ -23,6 +24,10 @@ export default function DashboardScreen() {
   const onRefresh = React.useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const navigateToApprovals = () => {
+    router.push('/(tabs)/approvals');
+  };
 
   if (isLoading) {
     return (
@@ -53,23 +58,40 @@ export default function DashboardScreen() {
         <AgentStatusCard status={stats.agent_status} />
 
         <View className="flex-row gap-4 mb-4">
-          <StatsCard
-            title="Pending"
-            value={stats.pending_count}
-            icon={Clock}
-            iconColor="#F59E0B"
-            className="bg-amber-500/10 border-amber-500/20"
-          />
-          <StatsCard
-            title="Completed"
-            value={stats.completed_today}
-            icon={CheckCircle2}
-            iconColor="#10B981"
-            className="bg-emerald-500/10 border-emerald-500/20"
-          />
+          <TouchableOpacity 
+            className="flex-1" 
+            onPress={navigateToApprovals}
+            activeOpacity={0.7}
+          >
+            <StatsCard
+              title="Pending"
+              value={stats.pending_count}
+              icon={Clock}
+              iconColor="#F59E0B"
+              className="bg-amber-500/10 border-amber-500/20"
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            className="flex-1" 
+            onPress={navigateToApprovals}
+            activeOpacity={0.7}
+          >
+            <StatsCard
+              title="Completed"
+              value={stats.completed_today}
+              icon={CheckCircle2}
+              iconColor="#10B981"
+              className="bg-emerald-500/10 border-emerald-500/20"
+            />
+          </TouchableOpacity>
         </View>
 
-        <View className="flex-row gap-4 mb-8">
+        <TouchableOpacity 
+          className="mb-8" 
+          onPress={navigateToApprovals}
+          activeOpacity={0.7}
+        >
           <StatsCard
             title="Urgent"
             value={stats.urgent_count}
@@ -77,7 +99,7 @@ export default function DashboardScreen() {
             iconColor="#EF4444"
             className="bg-red-500/10 border-red-500/20"
           />
-        </View>
+        </TouchableOpacity>
 
         <Text className="text-xl font-semibold text-foreground mb-4">Recent Activity</Text>
         <ActivityFeed activities={stats.recent_activity} />
