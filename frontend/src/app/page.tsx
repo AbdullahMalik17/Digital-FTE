@@ -5,11 +5,35 @@ import AgentChat from '@/components/AgentChat'
 import FinancialWidget from '@/components/widgets/FinancialWidget'
 import SocialWidget from '@/components/widgets/SocialWidget'
 
-export const dynamic = 'force-dynamic'
+// Cache for 30 seconds instead of force-dynamic
+export const revalidate = 30
 
 export default async function Home() {
-  const { pending, completed } = await fetchTasks()
-  const financials = await fetchFinancials()
+  // Wrap in try-catch with timeout to prevent slow SSR
+  let pending = [], completed = [], financials = null;
+
+  try {
+    const tasksPromise = fetchTasks();
+    const financialsPromise = fetchFinancials();
+
+    // Race with timeout (5 seconds max)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('SSR timeout')), 5000)
+    );
+
+    const results = await Promise.race([
+      Promise.all([tasksPromise, financialsPromise]),
+      timeoutPromise
+    ]);
+
+    if (Array.isArray(results)) {
+      ({ pending, completed } = results[0] as any);
+      financials = results[1];
+    }
+  } catch (error) {
+    console.error('SSR data fetch failed, using empty state:', error);
+    // Page will render with empty data, components will fetch client-side
+  }
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 p-6">
