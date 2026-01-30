@@ -14,13 +14,37 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const reason = body.reason || 'Rejected by user';
 
+    // Security: Validate task ID to prevent path traversal
+    // Only allow alphanumeric, hyphens, underscores, and dots
+    if (!/^[a-zA-Z0-9_.-]+$/.test(taskId)) {
+      return NextResponse.json(
+        { error: 'Invalid task ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Additional security: Prevent path traversal attempts
+    if (taskId.includes('..') || taskId.includes('/') || taskId.includes('\\')) {
+      return NextResponse.json(
+        { error: 'Invalid task ID - path traversal detected' },
+        { status: 400 }
+      );
+    }
+
     // Find the task file in Drafts folder
     const draftsPath = path.join(VAULT_PATH, 'Drafts');
     const dlqPath = path.join(VAULT_PATH, 'Dead_Letter_Queue');
 
     // List all files in Drafts
     const files = await fs.readdir(draftsPath);
-    const taskFile = files.find((f) => f.includes(taskId) || f === `${taskId}.md`);
+
+    // Security: Use exact match or safe pattern matching
+    // Only match files that start with taskId and end with .md
+    const taskFile = files.find((f) =>
+      f === `${taskId}.md` ||
+      f === taskId ||
+      (f.startsWith(`${taskId}_`) && f.endsWith('.md'))
+    );
 
     if (!taskFile) {
       return NextResponse.json(

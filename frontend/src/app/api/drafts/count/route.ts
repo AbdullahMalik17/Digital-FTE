@@ -5,8 +5,11 @@ import path from 'path';
 // Vault path - adjust based on environment
 const VAULT_PATH = process.env.VAULT_PATH || path.join(process.cwd(), '..', 'Vault');
 
-// Store last known count for detecting new drafts
-let lastKnownCount = 0;
+// IMPORTANT: This API route uses file system access which won't work in serverless environments
+// For production deployment (Vercel, Netlify), consider:
+// 1. Using a database to store draft metadata
+// 2. Deploying with Node.js runtime (not Edge runtime)
+// 3. Using an external storage service (S3, R2, etc.)
 
 export async function GET() {
   try {
@@ -20,13 +23,14 @@ export async function GET() {
     const draftFiles = files.filter((f) => f.endsWith('.md') && !f.startsWith('.'));
     const currentCount = draftFiles.length;
 
-    // Calculate new drafts since last check
-    const newCount = Math.max(0, currentCount - lastKnownCount);
-    lastKnownCount = currentCount;
+    // Note: "newCount" tracking removed - was using module-level state
+    // which doesn't persist in serverless/multi-instance environments.
+    // To track new drafts, implement client-side localStorage or server-side DB tracking.
 
     return NextResponse.json({
       count: currentCount,
-      newCount,
+      // Legacy field for backwards compatibility - always 0 now
+      newCount: 0,
     });
   } catch (error) {
     console.error('[API] Error counting drafts:', error);

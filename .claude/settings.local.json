@@ -27,7 +27,11 @@
       "Bash(claude -p --output-format json --no-session-persistence \"Analyze this task and determine if it needs human approval. Return ONLY valid JSON, nothing else.\n\nTask: Your build is ready! Here''s how to submit it to TestFlight\n\nThis is an informational email from Expo about a completed build. It provides instructions for submitting to TestFlight using EAS Submit.\n\nIMPORTANT: Respond with ONLY this JSON structure:\n{\n  \"\"decision\"\": \"\"APPROVE\"\",\n  \"\"target_folder\"\": \"\"Done\"\",\n  \"\"analysis\"\": \"\"Brief analysis\"\"\n}\n\nRules:\n- If informational, set decision=APPROVE and target_folder=Done\n- If requires action/money, set decision=NEEDS_APPROVAL and target_folder=Pending_Approval\")",
       "Bash(claude:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: clean up old tasks and fix unicode errors\n\n- Archive 118 old tasks \\(Jan 17-27\\) to Done folder\n- Keep only 25 recent tasks \\(Jan 28-30\\) for processing\n- Fix unicode emoji error in spotify_client.py for Windows console compatibility\n- Orchestrator tested and working in dry-run mode\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: clean up old tasks and fix unicode errors\n\n- Archive 118 old tasks \\(Jan 17-27\\) to Done folder\n- Keep only 25 recent tasks \\(Jan 28-30\\) for processing\n- Fix unicode emoji error in spotify_client.py for Windows console compatibility\n- Orchestrator tested and working in dry-run mode\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "mcp__serena__get_symbols_overview",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

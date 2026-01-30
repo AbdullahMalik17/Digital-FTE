@@ -17,20 +17,20 @@
   },
   "notifications@github.com": {
     "first_seen": "2026-01-17T20:23:55.453726",
-    "email_count": 52,
+    "email_count": 53,
     "importance_history": [
       "medium",
       "medium",
-      "medium",
       "not_important",
       "not_important",
       "medium",
       "medium",
       "medium",
       "medium",
+      "not_important",
       "not_important"
     ],
-    "last_seen": "2026-01-30T11:37:03.556897"
+    "last_seen": "2026-01-30T12:42:46.518464"
   },
   "noreply@medium.com": {
     "first_seen": "2026-01-17T20:23:55.463380",

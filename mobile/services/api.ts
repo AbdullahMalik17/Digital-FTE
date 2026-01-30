@@ -50,7 +50,7 @@ export const apiService = {
     api.post(`/api/tasks/${id}/approve`, { approved: true, note }),
 
   rejectTask: (id: string, note?: string) =>
-    api.post(`/api/tasks/${id}/approve`, { approved: false, note }),
+    api.post(`/api/tasks/${id}/reject`, { note }),
 
   // Chat
   sendChatMessage: (message: string, context?: Record<string, any>) =>
