@@ -37,7 +37,12 @@ export default function AgentTerminal() {
           {logs.map((log, i) => (
             <div key={i} className="flex gap-2 text-green-400/80 hover:text-green-400 transition-colors">
               <span className="text-green-700 shrink-0">
-                [{new Date(log.timestamp).toLocaleTimeString()}]
+                [{new Date(log.timestamp).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                })}]
               </span>
               <span className="text-blue-500 font-bold shrink-0 w-24">
                 {log.actor?.toUpperCase()}
