@@ -1,109 +1,143 @@
-import React from 'react';
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, Clock, AlertCircle } from 'lucide-react-native';
-import { useDashboard } from '../../hooks/useDashboard';
-import { StatsCard } from '../../components/dashboard/StatsCard';
-import { AgentStatusCard } from '../../components/dashboard/AgentStatusCard';
-import { ActivityFeed } from '../../components/dashboard/ActivityFeed';
-import { Skeleton } from '../../components/ui/LoadingSkeleton';
-import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { getGreeting } from '../../utils/greeting';
+import { SystemStatusWidget } from '../../components/dashboard/SystemStatusWidget';
+import { AnimatedButton } from '../../components/ui/AnimatedButton';
+import { GlassCard } from '../../components/ui/glass/GlassCard';
+import { apiService } from '../../services/api';
+import { Mic, Plus, Scan, FileText, Bell } from 'lucide-react-native';
 
-export default function DashboardScreen() {
-  const { data, isLoading, refetch, isRefetching } = useDashboard();
+export default function Dashboard() {
+  const [greeting, setGreeting] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [tasks, setTasks] = useState([]);
 
-  // Mock data for initial development/fallback
-  const stats = data || {
-    pending_count: 0,
-    completed_today: 0,
-    urgent_count: 0,
-    agent_status: 'online' as const,
-    recent_activity: [],
+  useEffect(() => {
+    // Initial greeting
+    setGreeting(getGreeting());
+
+    // Update greeting every minute
+    const interval = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60000);
+
+    loadData();
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadData = async () => {
+    try {
+      // Placeholder for actual data fetching
+      const pendingTasks = await apiService.getPendingTasks(3);
+      // setTasks(pendingTasks.data); 
+    } catch (e) {
+      console.log("Error loading dashboard", e);
+    }
   };
 
-  const onRefresh = React.useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  const navigateToApprovals = () => {
-    router.push('/(tabs)/approvals');
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setTimeout(() => setRefreshing(false), 1000);
   };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-background p-4">
-        <Skeleton className="h-20 w-full mb-4" />
-        <View className="flex-row gap-4 mb-4">
-          <Skeleton className="h-32 flex-1" />
-          <Skeleton className="h-32 flex-1" />
-        </View>
-        <Skeleton className="h-32 w-1/2" />
-      </SafeAreaView>
-    );
-  }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <LinearGradient
+      colors={['#0f172a', '#1e293b', '#0f172a']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      className="flex-1"
+    >
       <ScrollView
-        contentContainerStyle={{ padding: 16 }}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#fff" />
-        }
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
       >
-        <View className="mb-6">
-          <Text className="text-3xl font-bold text-foreground">Good Morning,</Text>
-          <Text className="text-muted-foreground text-lg">Abdullah</Text>
+        {/* Header Section */}
+        <SafeAreaView edges={['top']} className="px-6 mb-6">
+          <View className="flex-row justify-between items-center mb-6">
+            <View>
+              <Text className="text-slate-400 text-sm font-medium uppercase tracking-widest mb-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </Text>
+              <Text className="text-3xl font-bold text-white shadow-md">
+                {greeting}, Abdullah
+              </Text>
+            </View>
+            <AnimatedButton
+              label=""
+              variant="ghost"
+              size="sm"
+              icon={<Bell size={24} color="#F8FAFC" />}
+              onPress={() => { }}
+              className="w-10 h-10 rounded-full border border-white/10 bg-white/5"
+            />
+          </View>
+
+          {/* System Widget */}
+          <SystemStatusWidget status="online" memoryUsage="Synced" />
+        </SafeAreaView>
+
+        {/* Quick Actions Grid */}
+        <View className="px-6 mb-8">
+          <Text className="text-white text-lg font-semibold mb-4">Quick Actions</Text>
+          <View className="flex-row flex-wrap gap-4">
+            <QuickAction icon={<Plus size={24} color="#fff" />} label="New Task" color="bg-blue-600" />
+            <QuickAction icon={<Mic size={24} color="#fff" />} label="Voice" color="bg-violet-600" />
+            <QuickAction icon={<Scan size={24} color="#fff" />} label="Scan" color="bg-emerald-600" />
+            <QuickAction icon={<FileText size={24} color="#fff" />} label="Report" color="bg-rose-600" />
+          </View>
         </View>
 
-        <AgentStatusCard status={stats.agent_status} />
-
-        <View className="flex-row gap-4 mb-4">
-          <TouchableOpacity 
-            className="flex-1" 
-            onPress={navigateToApprovals}
-            activeOpacity={0.7}
-          >
-            <StatsCard
-              title="Pending"
-              value={stats.pending_count}
-              icon={Clock}
-              iconColor="#F59E0B"
-              className="bg-amber-500/10 border-amber-500/20"
+        {/* Recent Activity / Context */}
+        <View className="px-6">
+          <Text className="text-white text-lg font-semibold mb-4">Recent Context</Text>
+          <GlassCard className="p-0 border-white/10 bg-white/5">
+            <ActivityItem
+              title="Email Digest Generated"
+              time="10:00 AM"
+              type="system"
             />
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            className="flex-1" 
-            onPress={navigateToApprovals}
-            activeOpacity={0.7}
-          >
-            <StatsCard
-              title="Completed"
-              value={stats.completed_today}
-              icon={CheckCircle2}
-              iconColor="#10B981"
-              className="bg-emerald-500/10 border-emerald-500/20"
+            <ActivityItem
+              title="Odoo Report Synced"
+              time="Yesterday"
+              type="finance"
+              last
             />
-          </TouchableOpacity>
+          </GlassCard>
         </View>
-
-        <TouchableOpacity 
-          className="mb-8" 
-          onPress={navigateToApprovals}
-          activeOpacity={0.7}
-        >
-          <StatsCard
-            title="Urgent"
-            value={stats.urgent_count}
-            icon={AlertCircle}
-            iconColor="#EF4444"
-            className="bg-red-500/10 border-red-500/20"
-          />
-        </TouchableOpacity>
-
-        <Text className="text-xl font-semibold text-foreground mb-4">Recent Activity</Text>
-        <ActivityFeed activities={stats.recent_activity} />
       </ScrollView>
-    </SafeAreaView>
+    </LinearGradient>
+  );
+}
+
+function QuickAction({ icon, label, color }: any) {
+  return (
+    <AnimatedButton
+      label=""
+      className={`w-[47%] aspect-[1.2] rounded-2xl border-0 ${color} shadow-lg shadow-blue-500/20`}
+      onPress={() => { }}
+    >
+      <View className="items-center justify-center space-y-2">
+        <View className="bg-white/20 p-3 rounded-full mb-2">
+          {icon}
+        </View>
+        <Text className="text-white font-bold">{label}</Text>
+      </View>
+    </AnimatedButton>
+  );
+}
+
+function ActivityItem({ title, time, type, last }: any) {
+  return (
+    <View className={`p-4 flex-row items-center border-b border-white/5 ${last ? 'border-b-0' : ''}`}>
+      <View className="w-2 h-2 rounded-full bg-blue-400 mr-4" />
+      <View className="flex-1">
+        <Text className="text-white font-medium">{title}</Text>
+        <Text className="text-slate-400 text-xs">{time}</Text>
+      </View>
+    </View>
   );
 }

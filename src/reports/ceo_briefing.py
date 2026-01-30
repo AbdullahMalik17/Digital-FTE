@@ -31,11 +31,39 @@ ARCHIVE_PATH = VAULT_PATH / "Archive"
 sys.path.append(str(PROJECT_ROOT / "src"))
 try:
     from utils.ai_agent import invoke_agent
-    from utils.audit_logger import log_audit, AuditDomain, AuditStatus
+    from utils.audit_logger import log_audit, AuditDomain, AuditStatus, get_audit_logs
 except ImportError:
     def invoke_agent(prompt, dry_run=False):
         return False, "", "none"
+    def get_audit_logs(days=7):
+        return []
     # Audit logger imports optional - we read from log files directly
+
+
+def get_audit_logs_for_briefing(days: int = 7) -> List[Dict[str, Any]]:
+    """
+    Retrieve audit logs for the CEO briefing report.
+    Uses the audit_logger module to fetch recent activity.
+    """
+    try:
+        # Try to use the audit_logger's get_audit_logs function
+        return get_audit_logs(days=days)
+    except Exception as e:
+        logger.warning(f"Could not fetch audit logs via module: {e}")
+        # Fallback: read directly from audit log files
+        audit_entries = []
+        audit_path = LOGS_PATH / "audit"
+        if audit_path.exists():
+            cutoff = datetime.now() - timedelta(days=days)
+            for log_file in audit_path.glob("audit_*.jsonl"):
+                try:
+                    with open(log_file, 'r') as f:
+                        for line in f:
+                            entry = json.loads(line.strip())
+                            audit_entries.append(entry)
+                except Exception:
+                    continue
+        return audit_entries
 
 # ROI Values (Estimated dollars saved per action)
 ROI_VALUES = {

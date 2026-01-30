@@ -27,6 +27,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from utils.audit_logger import log_audit, AuditDomain, AuditStatus
+from utils.error_recovery import retry_with_backoff, RetryConfig, get_circuit_breaker
 
 # Load environment variables
 load_dotenv(PROJECT_ROOT / ".env")

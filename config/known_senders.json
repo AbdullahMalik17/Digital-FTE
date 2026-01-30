@@ -17,20 +17,20 @@
   },
   "notifications@github.com": {
     "first_seen": "2026-01-17T20:23:55.453726",
-    "email_count": 33,
+    "email_count": 44,
     "importance_history": [
       "medium",
-      "medium",
-      "medium",
-      "medium",
-      "medium",
-      "medium",
-      "medium",
+      "not_important",
       "medium",
       "not_important",
-      "not_important"
+      "medium",
+      "medium",
+      "medium",
+      "medium",
+      "medium",
+      "medium"
     ],
-    "last_seen": "2026-01-23T21:12:08.636237"
+    "last_seen": "2026-01-30T00:29:30.762785"
   },
   "noreply@medium.com": {
     "first_seen": "2026-01-17T20:23:55.463380",
@@ -54,14 +54,15 @@
   },
   "invitations@linkedin.com": {
     "first_seen": "2026-01-17T20:23:55.480757",
-    "email_count": 4,
+    "email_count": 5,
     "importance_history": [
+      "medium",
       "medium",
       "medium",
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-21T10:51:33.603061"
+    "last_seen": "2026-01-30T00:29:30.750657"
   },
   "changelog@neon.tech": {
     "first_seen": "2026-01-17T20:23:55.488102",
@@ -73,34 +74,37 @@
   },
   "updates@send.zapier.com": {
     "first_seen": "2026-01-17T20:23:55.510279",
-    "email_count": 1,
+    "email_count": 2,
     "importance_history": [
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-17T20:23:55.510279"
+    "last_seen": "2026-01-28T21:07:42.408744"
   },
   "learn@send.zapier.com": {
     "first_seen": "2026-01-17T20:23:55.522683",
-    "email_count": 5,
+    "email_count": 6,
     "importance_history": [
+      "medium",
       "medium",
       "medium",
       "medium",
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-23T21:12:08.710425"
+    "last_seen": "2026-01-28T21:07:42.218819"
   },
   "newsletters-noreply@linkedin.com": {
     "first_seen": "2026-01-17T20:23:55.543317",
-    "email_count": 4,
+    "email_count": 5,
     "importance_history": [
       "medium",
       "not_important",
       "medium",
+      "medium",
       "medium"
     ],
-    "last_seen": "2026-01-23T21:07:11.382936"
+    "last_seen": "2026-01-28T21:07:42.192454"
   },
   "adam@uxpilot.ai": {
     "first_seen": "2026-01-17T20:23:55.603684",
@@ -113,13 +117,14 @@
   },
   "messages-noreply@linkedin.com": {
     "first_seen": "2026-01-17T21:19:07.007585",
-    "email_count": 3,
+    "email_count": 4,
     "importance_history": [
+      "medium",
       "medium",
       "medium",
       "medium"
     ],
-    "last_seen": "2026-01-23T20:04:03.765561"
+    "last_seen": "2026-01-28T21:07:42.423731"
   },
   "google-cloud-compliance-noreply@google.com": {
     "first_seen": "2026-01-17T21:30:12.451430",
@@ -225,12 +230,13 @@
   },
   "no-reply@email.slackhq.com": {
     "first_seen": "2026-01-21T10:51:33.685517",
-    "email_count": 2,
+    "email_count": 3,
     "importance_history": [
       "medium",
-      "medium"
+      "medium",
+      "not_important"
     ],
-    "last_seen": "2026-01-22T12:29:48.213331"
+    "last_seen": "2026-01-30T00:29:30.769302"
   },
   "noreply@lovable.dev": {
     "first_seen": "2026-01-21T10:51:33.690954",
@@ -372,5 +378,63 @@
       "medium"
     ],
     "last_seen": "2026-01-23T21:12:08.727986"
+  },
+  "groups-noreply@linkedin.com": {
+    "first_seen": "2026-01-28T21:07:42.096154",
+    "email_count": 2,
+    "importance_history": [
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.493210"
+  },
+  "jobs-noreply@linkedin.com": {
+    "first_seen": "2026-01-28T21:07:42.149653",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.149713"
+  },
+  "ant.wilson@supabase.com": {
+    "first_seen": "2026-01-28T21:07:42.360252",
+    "email_count": 2,
+    "importance_history": [
+      "medium",
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.376951"
+  },
+  "firefox@mail.mozilla.org": {
+    "first_seen": "2026-01-28T21:07:42.438485",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.438597"
+  },
+  "hello@expo.dev": {
+    "first_seen": "2026-01-28T21:07:42.457921",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.457939"
+  },
+  "hello@medium.com": {
+    "first_seen": "2026-01-28T21:07:42.474969",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-28T21:07:42.474985"
+  },
+  "support@getclockwise.com": {
+    "first_seen": "2026-01-30T00:29:30.775529",
+    "email_count": 1,
+    "importance_history": [
+      "medium"
+    ],
+    "last_seen": "2026-01-30T00:29:30.775536"
   }
 }

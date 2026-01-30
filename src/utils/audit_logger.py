@@ -407,6 +407,36 @@ def log_audit(
     return logger.log_action(action, actor, domain, resource, status, **kwargs)
 
 
+def get_audit_logs(
+    days: int = 7,
+    domain: Optional[AuditDomain] = None,
+    status: Optional[AuditStatus] = None,
+    action_prefix: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Retrieve audit logs for a specified time period.
+
+    Used by CEO Briefing and other reporting tools.
+
+    Args:
+        days: Number of days to look back (default: 7)
+        domain: Filter by domain (optional)
+        status: Filter by status (optional)
+        action_prefix: Filter by action prefix (optional)
+
+    Returns:
+        List of audit log entries as dictionaries
+    """
+    logger = get_audit_logger()
+    entries = logger.query(
+        start_date=datetime.now() - timedelta(days=days),
+        domain=domain,
+        status=status,
+        action_prefix=action_prefix
+    )
+    return [asdict(e) if hasattr(e, '__dataclass_fields__') else e for e in entries]
+
+
 if __name__ == "__main__":
     # Test the audit logger
     print("Testing Enhanced Audit Logger...")

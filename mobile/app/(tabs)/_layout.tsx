@@ -1,22 +1,13 @@
 import { Tabs } from 'expo-router';
-import { View } from 'react-native';
 import { Home, CheckSquare, MessageSquare, Settings, Calendar } from 'lucide-react-native';
-import { Colors } from '../../constants/colors';
+import { TabBar } from '../../components/ui/TabBar';
 
 export default function TabLayout() {
   return (
     <Tabs
+      tabBar={props => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.dark.card,
-          borderTopColor: Colors.dark.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: Colors.dark.primaryForeground,
-        tabBarInactiveTintColor: Colors.dark.mutedForeground,
       }}
     >
       <Tabs.Screen

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(python3:*)",
+      "Bash(python tests/test_social_media_apis.py:*)",
+      "Bash(pip3 install:*)",
+      "Bash(uv run python:*)",
+      "Bash(ls:*)",
+      "Bash(source .venv/bin/activate)",
+      "mcp__playwright__browser_navigate",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__playwright__browser_install",
+      "Bash(npx playwright install:*)",
+      "Bash(pip install:*)",
+      "Bash(uv pip install:*)",
+      "Bash(flyctl status:*)",
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(sudo docker compose:*)",
+      "Bash(curl:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(grep:*)",
+      "Bash(python:*)",
+      "Bash(source venv/bin/activate)"
+    ]
+  }
+}

@@ -694,7 +694,10 @@ def main():
                 # Determine importance
                 importance = determine_importance(subject, snippet, sender)
 
-                logger.info(f"Processing [{importance.upper()}]: {subject} from {sender}")
+                # Sanitize for logging (remove emojis for console safety)
+                log_subject = subject.encode('ascii', 'ignore').decode('ascii')
+                log_sender = sender.encode('ascii', 'ignore').decode('ascii')
+                logger.info(f"Processing [{importance.upper()}]: {log_subject} from {log_sender}")
 
                 # Create task file
                 filepath = create_task_file(email, importance)
@@ -703,7 +706,7 @@ def main():
                 # 1. URGENT/IMPORTANT: Send simple auto-reply immediately & Notify
                 if importance == "important":
                     if AUTO_REPLY_ENABLED:
-                        logger.info(f"🔴 URGENT Email detected: Sending immediate auto-acknowledgment to {sender}")
+                        logger.info(f"[URGENT] Email detected: Sending immediate auto-acknowledgment to {sender}")
                         sent_success = send_auto_reply(service, email, importance)
                         if sent_success:
                             # Update task file to reflect action taken
@@ -714,7 +717,7 @@ def main():
                     
                 # 2. MEDIUM/LOW: Do NOT auto-reply. Ask user for next steps.
                 else:
-                    logger.info(f"⚪ {importance.upper()} Email: Created task for user decision (No auto-reply)")
+                    logger.info(f"[{importance.upper()}] Email: Created task for user decision (No auto-reply)")
 
                 if filepath:
                     processed_ids.add(msg_id)

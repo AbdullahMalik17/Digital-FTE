@@ -34,7 +34,7 @@ export default function CalendarScreen() {
           title: e.title,
           startDate: new Date(e.startDate),
           endDate: new Date(e.endDate),
-          location: e.location
+          location: e.location || undefined
         })).sort((a, b) => a.startDate.getTime() - b.startDate.getTime()));
       } else {
         Alert.alert('Permission needed', 'Calendar access is required to show your schedule.');

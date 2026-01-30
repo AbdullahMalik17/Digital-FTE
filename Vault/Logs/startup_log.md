@@ -1494,3 +1494,97 @@
 | 2026-01-30 10:01:02 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
 | 2026-01-30 10:01:02 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
 | 2026-01-30 10:01:02 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:01:12 | STARTUP | watching-linkedin | SUCCESS | PID: 1810 |
+| 2026-01-30 10:01:12 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:01:18 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 1829 |
+| 2026-01-30 10:01:18 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:01:28 | STARTUP | odoo-mcp-server | SUCCESS | PID: 1894 |
+| 2026-01-30 10:01:28 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:01:36 | STARTUP | email-mcp-server | SUCCESS | PID: 1950 |
+| 2026-01-30 10:01:37 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:01:43 | STARTUP | watching-gmail | SUCCESS | PID: 1957 |
+| 2026-01-30 10:01:44 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:01:44 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:01:44 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:01:54 | STARTUP | watching-linkedin | SUCCESS | PID: 1965 |
+| 2026-01-30 10:01:54 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:01:59 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 1967 |
+| 2026-01-30 10:01:59 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:02:09 | STARTUP | odoo-mcp-server | SUCCESS | PID: 1969 |
+| 2026-01-30 10:02:09 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:02:19 | STARTUP | email-mcp-server | SUCCESS | PID: 1970 |
+| 2026-01-30 10:02:20 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:02:26 | STARTUP | watching-gmail | SUCCESS | PID: 2032 |
+| 2026-01-30 10:02:26 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:02:27 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:02:27 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:02:35 | STARTUP | watching-linkedin | SUCCESS | PID: 2090 |
+| 2026-01-30 10:02:35 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:02:41 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2113 |
+| 2026-01-30 10:02:41 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:02:51 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2128 |
+| 2026-01-30 10:02:51 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:03:01 | STARTUP | email-mcp-server | SUCCESS | PID: 2138 |
+| 2026-01-30 10:03:02 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:03:08 | STARTUP | watching-gmail | SUCCESS | PID: 2148 |
+| 2026-01-30 10:03:08 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:03:08 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:03:08 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:03:18 | STARTUP | watching-linkedin | SUCCESS | PID: 2162 |
+| 2026-01-30 10:03:18 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:03:22 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2170 |
+| 2026-01-30 10:03:22 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:03:32 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2184 |
+| 2026-01-30 10:03:32 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:03:42 | STARTUP | email-mcp-server | SUCCESS | PID: 2196 |
+| 2026-01-30 10:03:43 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:03:49 | STARTUP | watching-gmail | SUCCESS | PID: 2205 |
+| 2026-01-30 10:03:49 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:03:49 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:03:49 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:03:59 | STARTUP | watching-linkedin | SUCCESS | PID: 2218 |
+| 2026-01-30 10:03:59 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:04:05 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2244 |
+| 2026-01-30 10:04:05 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:04:13 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2287 |
+| 2026-01-30 10:04:14 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:04:24 | STARTUP | email-mcp-server | SUCCESS | PID: 2298 |
+| 2026-01-30 10:04:25 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:04:32 | STARTUP | watching-gmail | SUCCESS | PID: 2303 |
+| 2026-01-30 10:04:32 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:04:32 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:04:32 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:04:41 | STARTUP | watching-linkedin | SUCCESS | PID: 2309 |
+| 2026-01-30 10:04:41 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:04:46 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2311 |
+| 2026-01-30 10:04:46 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:04:56 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2314 |
+| 2026-01-30 10:04:56 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:05:06 | STARTUP | email-mcp-server | SUCCESS | PID: 2322 |
+| 2026-01-30 10:05:07 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:05:14 | STARTUP | watching-gmail | SUCCESS | PID: 2328 |
+| 2026-01-30 10:05:15 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:05:15 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:05:15 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:05:25 | STARTUP | watching-linkedin | SUCCESS | PID: 2332 |
+| 2026-01-30 10:05:25 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:05:30 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2334 |
+| 2026-01-30 10:05:31 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:05:41 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2335 |
+| 2026-01-30 10:05:41 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:05:51 | STARTUP | email-mcp-server | SUCCESS | PID: 2339 |
+| 2026-01-30 10:05:52 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:05:59 | STARTUP | watching-gmail | SUCCESS | PID: 2342 |
+| 2026-01-30 10:05:59 | STARTUP | watching-filesystem | FAILED | Skill verification failed |
+| 2026-01-30 10:06:00 | STARTUP | watching-whatsapp | FAILED | Skill verification failed |
+| 2026-01-30 10:06:00 | CRASH | watching-linkedin | EXITED | Code: 1 |
+| 2026-01-30 10:06:10 | STARTUP | watching-linkedin | SUCCESS | PID: 2345 |
+| 2026-01-30 10:06:10 | CRASH | digital-fte-orchestrator | EXITED | Code: 1 |
+| 2026-01-30 10:06:16 | STARTUP | digital-fte-orchestrator | SUCCESS | PID: 2348 |
+| 2026-01-30 10:06:16 | CRASH | odoo-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:06:26 | STARTUP | odoo-mcp-server | SUCCESS | PID: 2349 |
+| 2026-01-30 10:06:27 | CRASH | email-mcp-server | EXITED | Code: 1 |
+| 2026-01-30 10:06:37 | STARTUP | email-mcp-server | SUCCESS | PID: 2357 |
+| 2026-01-30 10:06:38 | CRASH | watching-gmail | EXITED | Code: 1 |
+| 2026-01-30 10:06:44 | SHUTDOWN | digital-fte-orchestrator | SUCCESS | Graceful stop |
+| 2026-01-30 10:06:45 | SHUTDOWN | frontend-dashboard | SUCCESS | Graceful stop |

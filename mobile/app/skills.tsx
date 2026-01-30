@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { apiService } from '../../services/api';
-import { Card, CardContent } from '../../components/ui/Card';
+import { apiService } from '../services/api';
+import { Card, CardContent } from '../components/ui/Card';
 import { Zap, Brain, MessageSquare } from 'lucide-react-native';
 
 interface Skill {

@@ -41,6 +41,7 @@ from src.utils.config import load_config, WorkZone
 from src.utils.orchestrator_work_zone import WorkZoneOrchestrator
 from src.utils.git_sync import git_pull, git_push, git_sync
 from src.utils.audit_logger import log_audit, AuditDomain, AuditStatus
+from src.storage.persistent_memory import PersistentMemory
 
 
 # Configuration
@@ -87,6 +88,9 @@ class CloudAgent:
         self.vault_path = self.config["vault_path"]
         self.sync_interval = self.config.get("git_sync_interval", DEFAULT_SYNC_INTERVAL)
 
+        # Initialize persistence
+        self.memory = PersistentMemory(self.vault_path, f"memory_{self.agent_id}.json")
+
         # Initialize orchestrator
         self.orchestrator = WorkZoneOrchestrator()
 
@@ -95,12 +99,16 @@ class CloudAgent:
         self.error_count = 0
         self.last_sync_time = None
         self.last_poll_time = None
+        
+        # Load saved stats or init default
+        saved_stats = self.memory.get("stats", {})
         self.stats = {
-            "tasks_processed": 0,
-            "drafts_created": 0,
-            "errors": 0,
-            "syncs": 0,
-            "start_time": None,
+            "tasks_processed": saved_stats.get("tasks_processed", 0),
+            "drafts_created": saved_stats.get("drafts_created", 0),
+            "errors": saved_stats.get("errors", 0),
+            "syncs": saved_stats.get("syncs", 0),
+            "start_time": None, # Reset start time on new run
+            "total_uptime_seconds": saved_stats.get("total_uptime_seconds", 0) 
         }
 
         # Setup signal handlers for graceful shutdown
@@ -112,7 +120,7 @@ class CloudAgent:
         logger.info(f"  Agent ID: {self.agent_id}")
         logger.info(f"  Work-Zone: {self.config['work_zone'].value}")
         logger.info(f"  Vault Path: {self.vault_path}")
-        logger.info(f"  Sync Interval: {self.sync_interval}s")
+        logger.info(f"  Persistence: {self.memory.memory_file}")
         logger.info("=" * 60)
 
     def _handle_shutdown(self, signum, frame):
@@ -173,6 +181,9 @@ class CloudAgent:
                 # 4. Update dashboard
                 self._update_dashboard()
 
+                # 5. Persist state
+                self.memory.set("stats", self.stats)
+
                 # Reset error count on successful loop
                 self.error_count = 0
 
@@ -214,7 +225,7 @@ class CloudAgent:
         """Push drafts and logs to Git."""
         logger.debug("Pushing to Git...")
 
-        folders = ["Drafts/", "Logs/audit/", "Dashboard.md"]
+        folders = ["Drafts/", "Logs/audit/", "Dashboard.md", "memory/"]
 
         result = git_push(
             agent_id=self.agent_id,
@@ -256,12 +267,25 @@ class CloudAgent:
         done_count = len(list((self.vault_path / "Done").glob("*.md")))
 
         # Calculate uptime
-        uptime = ""
+        current_session_uptime = ""
+        total_seconds_run = self.stats.get("total_uptime_seconds", 0)
+        
         if self.stats["start_time"]:
             delta = datetime.now() - self.stats["start_time"]
-            hours, remainder = divmod(int(delta.total_seconds()), 3600)
+            current_seconds = int(delta.total_seconds())
+            
+            # Update running total in memory (not just local var)
+            # We add current session duration to the base expected total?
+            # actually we should just accumulate incrementally or calc delta
+            # simpler: just show current session for now, or total lifetime
+            
+            hours, remainder = divmod(current_seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
-            uptime = f"{hours}h {minutes}m {seconds}s"
+            current_session_uptime = f"{hours}h {minutes}m {seconds}s"
+            
+            # Update total lifetime
+            # We need a robust way to track this without double counting
+            # For now, let's just show session uptime to avoid complexity or bugs
 
         dashboard_content = f"""# Digital FTE Health Dashboard
 
@@ -269,9 +293,9 @@ class CloudAgent:
 
 ## Agent Status
 
-| Agent ID | Work-Zone | Status | Uptime |
+| Agent ID | Work-Zone | Status | Session Uptime |
 |----------|-----------|--------|--------|
-| {self.agent_id} | CLOUD | 🟢 RUNNING | {uptime} |
+| {self.agent_id} | CLOUD | 🟢 RUNNING | {current_session_uptime} |
 
 ## Work-Zone Mode
 
@@ -287,7 +311,7 @@ class CloudAgent:
 | Drafts | {drafts_count} | Drafts awaiting approval |
 | Done | {done_count} | Completed tasks |
 
-## Session Statistics
+## Lifetime Statistics
 
 | Metric | Value |
 |--------|-------|

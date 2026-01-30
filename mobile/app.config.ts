@@ -1,0 +1,53 @@
+import { ExpoConfig, ConfigContext } from 'expo/config';
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: "Abdullah Junior",
+  slug: "abdullah-junior",
+  version: "1.0.0",
+  orientation: "portrait",
+  icon: "./assets/images/icon.png",
+  scheme: "abdullah-junior",
+  userInterfaceStyle: "automatic",
+  newArchEnabled: true,
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: "com.abdullahjunior.mobile",
+    googleServicesFile: "./GoogleService-Info.plist",
+    infoPlist: {
+      UIBackgroundModes: [
+        "remote-notification"
+      ]
+    }
+  },
+  android: {
+    package: "com.abdullahjunior.mobile",
+    googleServicesFile: "./google-services.json"
+  },
+  plugins: [
+    "expo-router",
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/images/notification-icon.png",
+        color: "#2563eb",
+        defaultChannel: "default"
+      }
+    ]
+  ],
+  experiments: {
+    typedRoutes: true
+  },
+  extra: {
+    router: {},
+    eas: {
+      projectId: "1fe52e97-f84b-49ff-bd5e-2683b3f079c9"
+    }
+  },
+  runtimeVersion: {
+    policy: "appVersion"
+  },
+  updates: {
+    url: "https://u.expo.dev/1fe52e97-f84b-49ff-bd5e-2683b3f079c9"
+  }
+});
