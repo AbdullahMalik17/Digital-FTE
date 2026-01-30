@@ -112,7 +112,14 @@ export default function TaskBoard({
                                 </CardHeader>
                                 <CardFooter className="pt-0 px-4 pb-2 justify-end">
                                     <span className="text-[10px] text-zinc-700 font-mono">
-                                        {new Date(task.timestamp).toLocaleString()}
+                                        {new Date(task.timestamp).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true
+                                        })}
                                     </span>
                                 </CardFooter>
                             </Card>
