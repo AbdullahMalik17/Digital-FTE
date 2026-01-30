@@ -69,6 +69,7 @@ AI_AGENTS = [
             os.path.expandvars(r"%APPDATA%\\npm\\gemini.cmd"),
         ],
         "prompt_flag": "-p",
+        "extra_flags": [],
         "enabled": True
     },
     {
@@ -79,6 +80,7 @@ AI_AGENTS = [
             os.path.expandvars(r"%APPDATA%\\npm\\claude.cmd"),
         ],
         "prompt_flag": "-p",
+        "extra_flags": ["--output-format", "json", "--no-session-persistence"],
         "enabled": True
     },
     {
@@ -89,6 +91,7 @@ AI_AGENTS = [
             os.path.expandvars(r"%APPDATA%\\npm\\qwen.cmd"),
         ],
         "prompt_flag": "-p",
+        "extra_flags": [],
         "enabled": True
     },
     {
@@ -99,6 +102,7 @@ AI_AGENTS = [
             "copilot.cmd",
         ],
         "prompt_flag": "-p",
+        "extra_flags": [],
         "enabled": True
     },
     {
@@ -108,6 +112,7 @@ AI_AGENTS = [
             "openai-codex",
         ],
         "prompt_flag": "-p",
+        "extra_flags": [],
         "enabled": True
     }
 ]
@@ -222,14 +227,16 @@ class DigitalFTEOrchestrator:
                     available.append({
                         "name": agent["name"],
                         "command": cmd_path,
-                        "prompt_flag": agent["prompt_flag"]
+                        "prompt_flag": agent["prompt_flag"],
+                        "extra_flags": agent.get("extra_flags", [])
                     })
                     break
                 elif os.path.exists(cmd):
                     available.append({
                         "name": agent["name"],
                         "command": cmd,
-                        "prompt_flag": agent["prompt_flag"]
+                        "prompt_flag": agent["prompt_flag"],
+                        "extra_flags": agent.get("extra_flags", [])
                     })
                     break
         return available
@@ -266,23 +273,30 @@ class DigitalFTEOrchestrator:
         """Build the structured prompt for the Agent."""
         task_content = task_path.read_text(encoding='utf-8')
 
-        prompt = f"""You are a JSON generator. You do not speak. You do not greet. You only output valid JSON.
+        prompt = f"""Analyze this task and determine if it needs human approval. Return ONLY valid JSON, nothing else.
 
-Input Task: {task_path.name}
-Content: {task_content[:1000]}...
+Task File: {task_path.name}
+
+Task Content:
+{task_content[:1000]}
 
 Handbook Rules:
-{self.handbook[:500]}...
+{self.handbook[:500]}
 
-Task: Analyze if this needs human approval.
-Output format:
+IMPORTANT: Respond with ONLY this JSON structure, no other text:
+
 {{
-  "decision": "APPROVE" or "NEEDS_APPROVAL",
-  "target_folder": "Done" or "Pending_Approval", 
-  "analysis": "reasoning"
+  "decision": "APPROVE",
+  "target_folder": "Done",
+  "analysis": "Brief analysis of why this task can be auto-approved or needs review"
 }}
-JSON ONLY.
-"""
+
+Rules:
+- If the task is informational (email notification, build status, etc.), set decision="APPROVE" and target_folder="Done"
+- If the task requires external action, money, or sensitive decisions, set decision="NEEDS_APPROVAL" and target_folder="Pending_Approval"
+- The "analysis" field should explain your reasoning in 1-2 sentences
+
+OUTPUT ONLY THE JSON, NOTHING ELSE."""
         return prompt
 
     def invoke_agent(self, prompt: str, task_path: Path) -> tuple[bool, Dict, str]:
@@ -302,13 +316,20 @@ JSON ONLY.
             agent_name = ai_agent["name"]
             command = ai_agent["command"]
             prompt_flag = ai_agent["prompt_flag"]
+            extra_flags = ai_agent.get("extra_flags", [])
 
             try:
                 logger.info(f"Invoking {agent_name.upper()}...")
-                
-                cmd = [command, prompt]
+
+                # Build command with extra flags
+                cmd = [command]
                 if prompt_flag:
-                    cmd = [command, prompt_flag, prompt]
+                    cmd.append(prompt_flag)
+                if extra_flags:
+                    cmd.extend(extra_flags)
+                cmd.append(prompt)
+
+                logger.debug(f"Command: {' '.join(cmd[:3])}... (prompt truncated)")
 
                 result = subprocess.run(
                     cmd,
@@ -322,24 +343,87 @@ JSON ONLY.
                 )
 
                 if result.returncode == 0:
-                    # ... existing success logic ...
                     # Parse JSON output
                     output = result.stdout.strip()
-                    
-                    # Robust JSON extraction: Find content between first { and last }
-                    json_match = re.search(r'(\{.*\})', output, re.DOTALL)
-                    if json_match:
-                        clean_output = json_match.group(1)
-                    else:
-                        clean_output = output
+
+                    if not output:
+                        logger.warning(f"{agent_name.upper()} returned empty output")
+                        continue
 
                     try:
-                        data = json.loads(clean_output)
-                        logger.info(f"{agent_name.upper()} returned valid JSON.")
-                        return True, data, agent_name
+                        # First, try parsing as-is (for --output-format json responses)
+                        parsed_response = json.loads(output)
+
+                        # Handle Claude Code JSON format (has 'content' array with text blocks)
+                        if isinstance(parsed_response, dict):
+                            # Check for Claude Code --output-format json structure
+                            if 'content' in parsed_response and isinstance(parsed_response['content'], list):
+                                # Extract text from content blocks
+                                text_content = ""
+                                for block in parsed_response['content']:
+                                    if isinstance(block, dict) and block.get('type') == 'text':
+                                        text_content += block.get('text', '')
+
+                                # Now try to parse the extracted text as JSON
+                                if text_content.strip().startswith('{'):
+                                    data = json.loads(text_content.strip())
+                                else:
+                                    # Try to find JSON in the text
+                                    json_match = re.search(r'(\{.*\})', text_content, re.DOTALL)
+                                    if json_match:
+                                        data = json.loads(json_match.group(1))
+                                    else:
+                                        logger.warning(f"{agent_name.upper()} text content has no JSON: {text_content[:100]}")
+                                        continue
+                            else:
+                                # Direct JSON response (already parsed)
+                                data = parsed_response
+                        else:
+                            logger.warning(f"{agent_name.upper()} returned non-dict JSON: {type(parsed_response)}")
+                            continue
+
                     except json.JSONDecodeError:
-                        logger.warning(f"{agent_name.upper()} output invalid JSON: {output[:100]}...")
-                        # Continue to next agent if JSON fails
+                        # Fallback: try extracting JSON from text output
+                        # Strategy 1: Remove markdown code blocks
+                        clean_output = output
+                        if '```' in output:
+                            code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', output, re.DOTALL)
+                            if code_block_match:
+                                clean_output = code_block_match.group(1)
+
+                        # Strategy 2: Find first complete JSON object
+                        if not clean_output.strip().startswith('{'):
+                            json_match = re.search(r'(\{[^{]*?\"decision\".*?\})', output, re.DOTALL)
+                            if json_match:
+                                clean_output = json_match.group(1)
+                            else:
+                                # Fallback: find any JSON object
+                                json_match = re.search(r'(\{.*\})', output, re.DOTALL)
+                                if json_match:
+                                    clean_output = json_match.group(1)
+                                else:
+                                    logger.warning(f"{agent_name.upper()} output has no JSON: {output[:200]}...")
+                                    continue
+
+                        try:
+                            data = json.loads(clean_output.strip())
+                        except json.JSONDecodeError as e:
+                            logger.warning(f"{agent_name.upper()} failed to parse JSON: {e}")
+                            logger.warning(f"Output: {output[:200]}...")
+                            continue
+
+                    # Validate expected fields
+                    if not isinstance(data, dict):
+                        logger.warning(f"{agent_name.upper()} returned non-dict JSON: {type(data)}")
+                        continue
+
+                    # Check if it has the expected fields or is just describing itself
+                    if 'role' in data and 'capabilities' in data and 'target_folder' not in data:
+                        logger.warning(f"{agent_name.upper()} returned self-description instead of task analysis")
+                        continue
+
+                    logger.info(f"{agent_name.upper()} returned valid JSON.")
+                    return True, data, agent_name
                 else:
                     logger.warning(f"{agent_name.upper()} failed (code {result.returncode})")
                     logger.warning(f"STDERR: {result.stderr[:500]}")
