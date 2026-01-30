@@ -28,3 +28,13 @@
 - **method**: manual_login
 
 ---
+
+## 2026-01-30 11:32:06 - authenticate [FAILED]
+- **error**: 'NoneType' object has no attribute 'goto'
+
+---
+
+## 2026-01-30 11:33:32 - authenticate [FAILED]
+- **error**: 'NoneType' object has no attribute 'goto'
+
+---

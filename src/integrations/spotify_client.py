@@ -28,7 +28,7 @@ class SpotifyClient:
         if self.client_id and self.client_secret:
             self._authenticate()
         else:
-            print("⚠️ Spotify credentials not found. Switching to MOCK MODE.")
+            print("WARNING: Spotify credentials not found. Switching to MOCK MODE.")
             self.mock_mode = True
             self.is_authenticated = True
 
