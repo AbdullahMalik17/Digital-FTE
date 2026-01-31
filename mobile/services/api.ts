@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import Config from '../config/AppConfig';
+import Config from '../configuration/appConfig';
 
 const DEFAULT_BASE_URL = Config.API_BASE_URL; // Production Fly.io URL
 
@@ -10,19 +10,24 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-api.interceptors.request.use(async (config) => {
-  const storedUrl = await AsyncStorage.getItem('api_base_url');
-  const storedKey = await AsyncStorage.getItem('api_secret_key');
-  
-  config.baseURL = storedUrl || DEFAULT_BASE_URL;
-  
-  // Add API Security Header
-  if (storedKey || Config.API_SECRET_KEY) {
-    config.headers['X-API-Key'] = storedKey || Config.API_SECRET_KEY;
+api.interceptors.request.use(
+  async (config: any) => {
+    const storedUrl = await AsyncStorage.getItem('api_base_url');
+    const storedKey = await AsyncStorage.getItem('api_secret_key');
+
+    config.baseURL = storedUrl || DEFAULT_BASE_URL;
+
+    // Add API Security Header
+    if (storedKey || Config.API_SECRET_KEY) {
+      config.headers['X-API-Key'] = storedKey || Config.API_SECRET_KEY;
+    }
+
+    return config;
+  },
+  (error: any) => {
+    return Promise.reject(error);
   }
-  
-  return config;
-});
+);
 
 export const apiService = {
   // Auth/Settings
@@ -79,6 +84,65 @@ export const apiService = {
 
   // Health
   health: () => api.get('/api/health'),
+
+  // Intelligence - Daily Digest
+  getDigest: () => api.get('/api/digest'),
+
+  // Intelligence - Follow-ups
+  getFollowUps: () => api.get('/api/follow-ups'),
+
+  updateFollowUp: (id: string, action: 'resolve' | 'snooze' | 'dismiss') =>
+    api.patch(`/api/follow-ups/${id}`, { action }),
+
+  // Intelligence - Analytics
+  getAnalytics: () => api.get('/api/analytics'),
+
+  // Calendar Intelligence
+  getUpcomingEvents: (days: number = 7, limit: number = 10) =>
+    api.get('/api/calendar/upcoming', { params: { days, limit } }),
+
+  checkAvailability: (startTime: string, endTime: string, calendarId?: string) =>
+    api.post('/api/calendar/check-availability', {
+      start_time: startTime,
+      end_time: endTime,
+      calendar_id: calendarId || 'primary'
+    }),
+
+  suggestMeetingTimes: (durationMinutes: number = 30, daysAhead: number = 5, preferMorning: boolean = false, preferAfternoon: boolean = false) =>
+    api.post('/api/calendar/suggest-times', {
+      duration_minutes: durationMinutes,
+      days_ahead: daysAhead,
+      prefer_morning: preferMorning,
+      prefer_afternoon: preferAfternoon
+    }),
+
+  detectMeetingFromEmail: (emailId: string, subject: string, body: string, sender: string, recipients?: string[]) =>
+    api.post('/api/calendar/detect-meeting', {
+      email_id: emailId,
+      subject,
+      body,
+      sender,
+      recipients
+    }),
+
+  createCalendarEvent: (event: {
+    title: string;
+    start_time: string;
+    end_time: string;
+    description?: string;
+    attendees?: string[];
+    location?: string;
+    send_invitations?: boolean;
+  }) => api.post('/api/calendar/create-event', event),
+
+  createEventFromEmail: (emailId: string, subject: string, body: string, sender: string, recipients?: string[]) =>
+    api.post('/api/calendar/create-from-email', {
+      email_id: emailId,
+      subject,
+      body,
+      sender,
+      recipients
+    }),
 
   // Settings
   setBaseUrl: async (url: string) => {

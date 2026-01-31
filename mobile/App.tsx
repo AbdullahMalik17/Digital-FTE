@@ -4,7 +4,7 @@ import { SplashScreen, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { Colors } from './constants/colors';
-import Config from './config/AppConfig';
+import Config from './configuration/appConfig';
 
 // Initialize the app with configuration
 SplashScreen.preventAutoHideAsync();
@@ -22,11 +22,17 @@ export default function App() {
   }, []);
 
   const initializeApp = async (): Promise<void> => {
-    // Set up any initial configuration
-    console.log('App initialized with config:', Config);
+    try {
+      // Set up any initial configuration
+      console.log('App initialized with config:', Config);
 
-    // You can perform additional initialization here
-    // such as setting up API base URL, checking for updates, etc.
+      // You can perform additional initialization here
+      // such as setting up API base URL, checking for updates, etc.
+    } catch (error) {
+      console.error('Error initializing app:', error);
+      // Still hide splash screen even if there's an error
+      SplashScreen.hideAsync();
+    }
   };
 
   if (!appReady) {

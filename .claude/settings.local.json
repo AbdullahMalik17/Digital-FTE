@@ -33,7 +33,10 @@
       "Bash(npx tsc:*)",
       "Bash(xargs:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: resolve frontend runtime errors and hydration issues\n\n## Backend\n- Started FastAPI server on port 8000\n- API now accessible at http://localhost:8000\n- Endpoints operational and responding correctly\n\n## Frontend Fixes\n\n### 1. API Connection Issues \\(ECONNREFUSED\\)\n- Root cause: Backend API server wasn''t running\n- Solution: Backend now running on localhost:8000\n- vault.ts already had proper error handling \\(try-catch with fallbacks\\)\n\n### 2. Date Hydration Error\n- Issue: Server/client date format mismatch\n  - Server: \"1/27/2026, 9:55:05 AM\"\n  - Client: \"27/01/2026, 09:55:05\"\n- Root cause: toLocaleString\\(\\) without locale specification\n- Fixed in:\n  - TaskBoard.tsx: Standardized to en-US with consistent format options\n  - DraftsView.tsx: Standardized to en-US with consistent format options\n- Format: MM/DD/YYYY, HH:MM AM/PM \\(consistent across SSR and CSR\\)\n\n## Impact\n- Frontend now loads without errors\n- No more ECONNREFUSED errors\n- No more React hydration mismatches\n- Dates display consistently\n\n## Testing\nRun these in parallel:\nTerminal 1: python -m uvicorn src.api_server:app --reload --port 8000\nTerminal 2: cd frontend && npm run dev\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:expo.dev)",
+      "Bash(npm ls:*)"
     ]
   }
 }

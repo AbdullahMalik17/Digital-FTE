@@ -6,6 +6,7 @@ import { getGreeting } from '../../utils/greeting';
 import { SystemStatusWidget } from '../../components/dashboard/SystemStatusWidget';
 import { AnimatedButton } from '../../components/ui/AnimatedButton';
 import { GlassCard } from '../../components/ui/glass/GlassCard';
+import { DigestSummaryCard, FollowUpsList, UpcomingEventsCard } from '../../components/intelligence';
 import { apiService } from '../../services/api';
 import { Mic, Plus, Scan, FileText, Bell } from 'lucide-react-native';
 
@@ -80,8 +81,13 @@ export default function Dashboard() {
           <SystemStatusWidget status="online" memoryUsage="Synced" />
         </SafeAreaView>
 
+        {/* Daily Digest Summary */}
+        <View className="px-6 mb-6">
+          <DigestSummaryCard />
+        </View>
+
         {/* Quick Actions Grid */}
-        <View className="px-6 mb-8">
+        <View className="px-6 mb-6">
           <Text className="text-white text-lg font-semibold mb-4">Quick Actions</Text>
           <View className="flex-row flex-wrap gap-4">
             <QuickAction icon={<Plus size={24} color="#fff" />} label="New Task" color="bg-blue-600" />
@@ -91,9 +97,19 @@ export default function Dashboard() {
           </View>
         </View>
 
+        {/* Follow-up Reminders */}
+        <View className="px-6 mb-6">
+          <FollowUpsList />
+        </View>
+
+        {/* Upcoming Calendar Events */}
+        <View className="px-6 mb-6">
+          <UpcomingEventsCard />
+        </View>
+
         {/* Recent Activity / Context */}
         <View className="px-6">
-          <Text className="text-white text-lg font-semibold mb-4">Recent Context</Text>
+          <Text className="text-white text-lg font-semibold mb-4">Recent Activity</Text>
           <GlassCard className="p-0 border-white/10 bg-white/5">
             <ActivityItem
               title="Email Digest Generated"

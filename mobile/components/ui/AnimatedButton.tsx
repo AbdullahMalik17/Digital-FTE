@@ -1,8 +1,8 @@
 import React from 'react';
-import { Pressable, Text, PressableProps, ActivityIndicator } from 'react-native';
+import { Pressable, Text, PressableProps, ActivityIndicator, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../utils/cn';
 
 interface AnimatedButtonProps extends PressableProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';

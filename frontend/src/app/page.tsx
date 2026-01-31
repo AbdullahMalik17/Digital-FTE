@@ -4,6 +4,7 @@ import AgentTerminal from '@/components/AgentTerminal'
 import AgentChat from '@/components/AgentChat'
 import FinancialWidget from '@/components/widgets/FinancialWidget'
 import SocialWidget from '@/components/widgets/SocialWidget'
+import { DailyDigestCard, FollowUpsWidget, AnalyticsCard } from '@/components/widgets'
 
 // Cache for 30 seconds instead of force-dynamic
 export const revalidate = 30
@@ -60,12 +61,17 @@ export default async function Home() {
                 </div>
             </header>
 
+            {/* Daily Digest Banner */}
+            <DailyDigestCard />
+
             {/* Main Command Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                
+
                 {/* Left Column: Input & Status */}
                 <div className="space-y-6 lg:col-span-1">
                     <AgentChat />
+                    <FollowUpsWidget />
+                    <AnalyticsCard />
                     <FinancialWidget data={financials} />
                     <SocialWidget />
                 </div>
@@ -73,7 +79,7 @@ export default async function Home() {
                 {/* Middle/Right Column: Terminal (Wide) */}
                 <div className="lg:col-span-3 space-y-6">
                     <AgentTerminal />
-                    
+
                     {/* Task Board embedded here for better width */}
                     <div className="pt-4">
                         <div className="flex items-center gap-2 mb-4">

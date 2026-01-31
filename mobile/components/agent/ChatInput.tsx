@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Send, Mic, Square } from 'lucide-react-native';
-import { Audio } from 'expo-av';
+import * as Audio from 'expo-av';
 import { cn } from '../../utils/cn';
 
 interface ChatInputProps {
@@ -11,7 +11,7 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [text, setText] = useState('');
-  const [recording, setRecording] = useState<Audio.Recording>();
+  const [recording, setRecording] = useState<any>(); // Using any due to expo-av typing issues
   const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
@@ -24,19 +24,19 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 
   const startRecording = async () => {
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await (Audio as any).requestPermissionsAsync();
       if (permission.status !== 'granted') {
         Alert.alert('Permission needed', 'Microphone permission is required to record voice messages.');
         return;
       }
 
-      await Audio.setAudioModeAsync({
+      await (Audio as any).setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      const { recording } = await (Audio as any).Recording.createAsync(
+        (Audio as any).RecordingOptionsPresets.HIGH_QUALITY
       );
 
       setRecording(recording);
@@ -52,10 +52,10 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 
     setIsRecording(false);
     try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI(); 
+      await (recording as any).stopAndUnloadAsync();
+      const uri = (recording as any).getURI();
       setRecording(undefined);
-      
+
       // In a real app, we would upload 'uri' to /api/voice/transcribe
       // For this demo, we'll simulate a transcription
       if (uri) {

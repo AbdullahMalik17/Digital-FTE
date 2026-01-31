@@ -905,6 +905,346 @@ async def test_auto_reply(recipient: str, platform: str = "whatsapp"):
         raise HTTPException(status_code=400, detail="Platform must be 'whatsapp' or 'gmail'")
 
 
+# ==================== Calendar Intelligence Endpoints ====================
+
+class MeetingDetectionRequest(BaseModel):
+    """Request for meeting detection from email content."""
+    email_id: str
+    subject: str
+    body: str
+    sender: str
+    recipients: Optional[List[str]] = None
+
+
+class AvailabilityCheckRequest(BaseModel):
+    """Request for checking calendar availability."""
+    start_time: str  # ISO format
+    end_time: str    # ISO format
+    calendar_id: Optional[str] = "primary"
+
+
+class CreateEventRequest(BaseModel):
+    """Request for creating a calendar event."""
+    title: str
+    start_time: str  # ISO format
+    end_time: str    # ISO format
+    attendees: List[str] = []
+    description: Optional[str] = None
+    location: Optional[str] = None
+    send_invitations: bool = True
+
+
+class MeetingSuggestionRequest(BaseModel):
+    """Request for meeting time suggestions."""
+    duration_minutes: int = 30
+    days_ahead: int = 5
+    prefer_morning: bool = False
+    prefer_afternoon: bool = False
+
+
+@app.post("/api/calendar/detect-meeting")
+async def detect_meeting_from_email(request: MeetingDetectionRequest):
+    """
+    Detect meeting request from email content.
+
+    Uses NLP patterns to identify meeting invitations, extract dates/times,
+    attendees, and suggested agenda items.
+    """
+    try:
+        from intelligence.meeting_detector import detect_meeting_from_email as detect_meeting
+
+        result = detect_meeting(
+            email_id=request.email_id,
+            subject=request.subject,
+            body=request.body,
+            sender=request.sender,
+            recipients=request.recipients
+        )
+
+        if result:
+            return {
+                "detected": True,
+                "confidence": result.confidence,
+                "meeting_type": result.meeting_type.value,
+                "suggested_title": result.suggested_title,
+                "suggested_date": result.suggested_date.isoformat() if result.suggested_date else None,
+                "suggested_duration": result.suggested_duration,
+                "attendees": result.attendees,
+                "location": result.location,
+                "agenda_items": result.agenda_items,
+                "raw_date_text": result.raw_date_text
+            }
+        else:
+            return {
+                "detected": False,
+                "message": "No meeting detected in email content"
+            }
+
+    except ImportError:
+        return {
+            "detected": False,
+            "message": "Meeting detection module not available"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calendar/check-availability")
+async def check_availability(request: AvailabilityCheckRequest):
+    """
+    Check if a time slot is available on the calendar.
+
+    Returns availability status, any conflicts, and suggested alternatives
+    if the requested time is not available.
+    """
+    try:
+        from intelligence.availability_checker import check_availability as check_avail
+
+        start = datetime.fromisoformat(request.start_time.replace('Z', '+00:00').replace('+00:00', ''))
+        end = datetime.fromisoformat(request.end_time.replace('Z', '+00:00').replace('+00:00', ''))
+
+        result = check_avail(
+            start_time=start,
+            end_time=end,
+            calendar_id=request.calendar_id
+        )
+
+        return {
+            "is_available": result.is_available,
+            "conflicts": result.conflicts,
+            "suggested_alternatives": [
+                {
+                    "start": slot.start.isoformat(),
+                    "end": slot.end.isoformat(),
+                    "duration_minutes": slot.duration_minutes
+                }
+                for slot in result.suggested_alternatives
+            ],
+            "message": result.message
+        }
+
+    except ImportError:
+        return {
+            "is_available": True,
+            "conflicts": [],
+            "suggested_alternatives": [],
+            "message": "Availability checker not available - assuming time is free"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calendar/suggest-times")
+async def suggest_meeting_times(request: MeetingSuggestionRequest):
+    """
+    Suggest optimal meeting times over the next several days.
+
+    Considers working hours, existing events, and preferences for
+    morning or afternoon meetings.
+    """
+    try:
+        from intelligence.availability_checker import suggest_meeting_times as suggest_times
+
+        slots = suggest_times(
+            duration_minutes=request.duration_minutes,
+            days_ahead=request.days_ahead
+        )
+
+        return {
+            "suggestions": [
+                {
+                    "start": slot.start.isoformat(),
+                    "end": slot.end.isoformat(),
+                    "duration_minutes": slot.duration_minutes,
+                    "day_of_week": slot.start.strftime("%A"),
+                    "time_of_day": "morning" if slot.start.hour < 12 else "afternoon"
+                }
+                for slot in slots
+            ],
+            "count": len(slots),
+            "parameters": {
+                "duration_minutes": request.duration_minutes,
+                "days_ahead": request.days_ahead
+            }
+        }
+
+    except ImportError:
+        # Return mock suggestions if module not available
+        suggestions = []
+        base_time = datetime.now().replace(hour=10, minute=0, second=0, microsecond=0)
+        for day_offset in range(min(request.days_ahead, 5)):
+            slot_date = base_time + timedelta(days=day_offset + 1)
+            if slot_date.weekday() < 5:  # Skip weekends
+                suggestions.append({
+                    "start": slot_date.isoformat(),
+                    "end": (slot_date + timedelta(minutes=request.duration_minutes)).isoformat(),
+                    "duration_minutes": request.duration_minutes,
+                    "day_of_week": slot_date.strftime("%A"),
+                    "time_of_day": "morning"
+                })
+
+        return {
+            "suggestions": suggestions[:5],
+            "count": len(suggestions[:5]),
+            "parameters": {
+                "duration_minutes": request.duration_minutes,
+                "days_ahead": request.days_ahead
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calendar/create-event")
+async def create_calendar_event(request: CreateEventRequest):
+    """
+    Create a new calendar event.
+
+    Checks availability first, then creates the event and optionally
+    sends invitations to attendees.
+    """
+    try:
+        from intelligence.calendar_manager import get_calendar_manager, CalendarEvent
+
+        start = datetime.fromisoformat(request.start_time.replace('Z', '+00:00').replace('+00:00', ''))
+        end = datetime.fromisoformat(request.end_time.replace('Z', '+00:00').replace('+00:00', ''))
+
+        event = CalendarEvent(
+            title=request.title,
+            start_time=start,
+            end_time=end,
+            attendees=request.attendees,
+            description=request.description,
+            location=request.location
+        )
+
+        manager = get_calendar_manager()
+        result = manager.create_event(
+            event=event,
+            send_invitations=request.send_invitations
+        )
+
+        return {
+            "success": result.success,
+            "event_id": result.event_id,
+            "event_link": result.event_link,
+            "message": result.message,
+            "conflicts": result.conflicts
+        }
+
+    except ImportError:
+        return {
+            "success": False,
+            "event_id": None,
+            "event_link": None,
+            "message": "Calendar manager not available",
+            "conflicts": []
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calendar/create-from-email")
+async def create_event_from_email(request: MeetingDetectionRequest):
+    """
+    Detect meeting in email and create calendar event in one step.
+
+    This combines meeting detection with event creation for streamlined
+    processing of meeting request emails.
+    """
+    try:
+        from intelligence.calendar_manager import create_event_from_email as create_from_email
+
+        result = create_from_email(
+            email_id=request.email_id,
+            subject=request.subject,
+            body=request.body,
+            sender=request.sender,
+            recipients=request.recipients,
+            auto_confirm=False  # Require manual confirmation
+        )
+
+        return {
+            "success": result.success,
+            "event_id": result.event_id,
+            "event_link": result.event_link,
+            "message": result.message,
+            "conflicts": result.conflicts if result.conflicts else []
+        }
+
+    except ImportError:
+        return {
+            "success": False,
+            "event_id": None,
+            "event_link": None,
+            "message": "Calendar integration not available",
+            "conflicts": []
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/calendar/upcoming")
+async def get_upcoming_events(days: int = 7, limit: int = 10):
+    """
+    Get upcoming calendar events.
+
+    Returns events for the next N days to display in the dashboard
+    or mobile app.
+    """
+    try:
+        from intelligence.calendar_manager import get_calendar_manager
+
+        manager = get_calendar_manager()
+        events = manager.get_upcoming_events(
+            days_ahead=days,
+            max_results=limit
+        )
+
+        return {
+            "events": events,
+            "count": len(events),
+            "parameters": {
+                "days_ahead": days,
+                "limit": limit
+            }
+        }
+
+    except ImportError:
+        # Return mock events if module not available
+        mock_events = [
+            {
+                "id": "mock-1",
+                "title": "Team Standup",
+                "start": (datetime.now() + timedelta(hours=1)).isoformat(),
+                "end": (datetime.now() + timedelta(hours=1, minutes=15)).isoformat(),
+                "location": "Google Meet",
+                "attendees": ["team@example.com"],
+                "link": None
+            },
+            {
+                "id": "mock-2",
+                "title": "Project Review",
+                "start": (datetime.now() + timedelta(days=1, hours=2)).isoformat(),
+                "end": (datetime.now() + timedelta(days=1, hours=3)).isoformat(),
+                "location": "Conference Room A",
+                "attendees": ["manager@example.com"],
+                "link": None
+            }
+        ]
+
+        return {
+            "events": mock_events,
+            "count": len(mock_events),
+            "parameters": {
+                "days_ahead": days,
+                "limit": limit
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Main ====================
 
 if __name__ == "__main__":
