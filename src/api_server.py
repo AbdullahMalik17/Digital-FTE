@@ -17,9 +17,12 @@ Run with:
 import os
 import sys
 import json
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 # Add src to path for imports
 SRC_DIR = Path(__file__).parent
@@ -237,6 +240,76 @@ async def handle_whatsapp_webhook(request: Request):
         # Return 200 to acknowledge receipt anyway so Meta doesn't retry
         return {"status": "error", "detail": str(e)}
 
+# ==================== Telegram Webhook ====================
+
+# Singleton Telegram bot instance for notifications
+_telegram_bot = None
+
+def get_telegram_bot():
+    """Get or create the Telegram bot singleton (for sending notifications)."""
+    global _telegram_bot
+    if _telegram_bot is None:
+        try:
+            from notifications.telegram_bot import TelegramBot
+        except ImportError:
+            from src.notifications.telegram_bot import TelegramBot
+        _telegram_bot = TelegramBot()
+    return _telegram_bot
+
+
+@app.post("/webhooks/telegram")
+async def handle_telegram_webhook(request: Request):
+    """
+    Handle Telegram webhook updates (alternative to polling mode).
+    Set webhook URL via: https://api.telegram.org/bot<TOKEN>/setWebhook?url=<YOUR_URL>/webhooks/telegram
+    """
+    try:
+        body = await request.json()
+        bot = get_telegram_bot()
+        if bot.app:
+            from telegram import Update
+            update = Update.de_json(body, bot.bot)
+            await bot.app.process_update(update)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Telegram webhook error: {e}")
+        return {"status": "error", "detail": str(e)}
+
+
+@app.post("/api/telegram/notify")
+async def send_telegram_notification(request: Request):
+    """Send a notification via Telegram bot."""
+    try:
+        body = await request.json()
+        bot = get_telegram_bot()
+
+        msg_type = body.get("type", "notification")
+
+        if msg_type == "approval":
+            await bot.send_approval_request(
+                task_id=body["task_id"],
+                title=body["title"],
+                description=body.get("description", ""),
+                priority=body.get("priority", "medium"),
+                source=body.get("source", "api"),
+            )
+        elif msg_type == "alert":
+            await bot.send_alert(
+                title=body["title"],
+                message=body.get("message", ""),
+                level=body.get("level", "info"),
+            )
+        elif msg_type == "digest":
+            await bot.send_digest(body.get("summary", "No summary provided"))
+        else:
+            await bot.send_notification(body.get("text", ""))
+
+        return {"status": "sent"}
+    except Exception as e:
+        logger.error(f"Telegram notify error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Endpoints ====================
 
 @app.get("/")
@@ -410,6 +483,19 @@ async def approve_task(task_id: str, request: TaskApprovalRequest = None):
 async def reject_task(task_id: str):
     """Shortcut to reject a task."""
     return await approve_task(task_id, TaskApprovalRequest(approved=False))
+
+
+@app.get("/api/agents/status")
+async def get_agent_status():
+    """Get status of all agents in the system."""
+    agents = [
+        {"name": "inbox_triage", "description": "Email & message triage", "icon": "📧", "status": "active"},
+        {"name": "social_media", "description": "LinkedIn & social posting", "icon": "💼", "status": "active"},
+        {"name": "task_orchestrator", "description": "Task routing & SLA monitoring", "icon": "🤖", "status": "active"},
+        {"name": "financial", "description": "Invoice & expense tracking", "icon": "💰", "status": "standby"},
+        {"name": "calendar", "description": "Meeting detection & scheduling", "icon": "📅", "status": "active"},
+    ]
+    return {"agents": agents, "count": len(agents), "timestamp": datetime.now().isoformat()}
 
 
 @app.get("/api/skills")

@@ -6,215 +6,190 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
- 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
- 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
+    --ring: 221 83% 53%;
+    --radius: 0.75rem;
+    --sidebar-bg: 220 20% 97%;
   }
- 
+
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 217 91% 60%;
     --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 224 76% 48%;
+    --sidebar-bg: 225 71% 5%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }
 
-/* PWA Safe Area Support */
+/* ── Modern SaaS Design System ─────────────────────────── */
+
 @layer utilities {
-  /* Safe area insets for notch devices */
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
+  /* Glassmorphism cards */
+  .glass-card {
+    @apply rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl;
   }
 
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
   }
 
-  .safe-area-left {
-    padding-left: env(safe-area-inset-left);
+  /* Glow effects */
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15),
+                0 0 60px rgba(59, 130, 246, 0.05);
   }
 
-  .safe-area-right {
-    padding-right: env(safe-area-inset-right);
+  .glow-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
   }
 
-  .safe-area-all {
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  .glow-red {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
   }
 
-  /* Prevent pull-to-refresh on mobile */
-  .no-overscroll {
-    overscroll-behavior: none;
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #3b82f6, #8b5cf6);
   }
 
-  /* Touch-optimized tap targets */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
+  /* Stat card hover */
+  .stat-card {
+    @apply glass-card p-6 transition-all duration-300;
   }
 
-  /* Smooth scrolling container */
-  .scroll-smooth {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+  .stat-card:hover {
+    @apply border-primary/20;
+    transform: translateY(-2px);
   }
 
-  /* Hide scrollbar but keep functionality */
+  /* Sidebar */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-muted-foreground transition-all duration-200;
+  }
+
+  .sidebar-link:hover {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  .sidebar-link.active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  /* Animated counter */
+  .counter-value {
+    @apply text-3xl font-bold tracking-tight tabular-nums;
+  }
+
+  /* Safe area insets */
+  .safe-area-top { padding-top: env(safe-area-inset-top); }
+  .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+  .no-overscroll { overscroll-behavior: none; }
+  .touch-target { min-height: 44px; min-width: 44px; }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Glass morphism effect */
-  .glass {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  /* Haptic feedback animation */
-  .haptic-tap {
-    transition: transform 0.1s ease;
-  }
-
-  .haptic-tap:active {
-    transform: scale(0.97);
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
 
-/* PWA Standalone Mode Styles */
-@media (display-mode: standalone) {
-  /* Hide browser-specific UI when installed */
-  .browser-only {
-    display: none !important;
-  }
+/* ── Animations ────────────────────────────────────────── */
 
-  /* Show PWA-only elements */
-  .pwa-only {
-    display: block !important;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile Navigation Adjustments */
-@media (max-width: 768px) {
-  /* Add bottom padding for mobile nav */
-  main {
-    padding-bottom: 80px !important;
-  }
-
-  /* Larger touch targets on mobile */
-  button, a {
-    min-height: 44px;
-  }
-}
-
-/* Animation for slide-in notifications */
 @keyframes slideInFromBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes slideInFromTop {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
-.animate-in.slide-in-from-bottom-4 {
-  animation: slideInFromBottom 0.3s ease-out;
-}
-
-.animate-in.slide-in-from-top-4 {
-  animation: slideInFromTop 0.3s ease-out;
-}
-
-/* Pulse animation for status indicators */
 @keyframes pulse-ring {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
 }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-fade-in-delay-1 { animation: fadeIn 0.4s ease-out 0.1s forwards; opacity: 0; }
+.animate-fade-in-delay-2 { animation: fadeIn 0.4s ease-out 0.2s forwards; opacity: 0; }
+.animate-fade-in-delay-3 { animation: fadeIn 0.4s ease-out 0.3s forwards; opacity: 0; }
+.animate-fade-in-delay-4 { animation: fadeIn 0.4s ease-out 0.4s forwards; opacity: 0; }
 
 .pulse-ring {
   animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ── PWA ───────────────────────────────────────────────── */
+
+@media (display-mode: standalone) {
+  .browser-only { display: none !important; }
+  .pwa-only { display: block !important; }
+}
+
+@media (max-width: 768px) {
+  main { padding-bottom: 80px !important; }
 }

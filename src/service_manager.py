@@ -75,6 +75,18 @@ SERVICES = {
         "restart_delay": 10,
         "description": "Email Sending MCP Server"
     },
+    "telegram-bot": {
+        "command": [sys.executable, "-m", "src.notifications.telegram_bot"],
+        "cwd": str(BASE_DIR),
+        "restart_delay": 5,
+        "description": "Telegram Command Bot (polling mode)"
+    },
+    "agent-team": {
+        "command": [sys.executable, "-m", "src.agents.runner"],
+        "cwd": str(BASE_DIR),
+        "restart_delay": 5,
+        "description": "AI Agent Team (Inbox Triage, Social Media, Orchestrator)"
+    },
     "frontend-dashboard": {
         "command": [NPM_CMD, "run", "dev"],
         "cwd": str(BASE_DIR / "frontend"),

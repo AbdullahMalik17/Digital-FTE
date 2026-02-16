@@ -1,19 +1,17 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ThemeProvider } from "@/components/theme-provider"
-import { ModeToggle } from "@/components/mode-toggle"
 import { Toaster } from "sonner"
 import PWAProvider from '@/components/pwa/PWAProvider'
-import MobileNav from '@/components/MobileNav'
+import Sidebar from '@/components/Sidebar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Abdullah Junior | Digital FTE',
-  description: 'Your AI-powered Digital Full-Time Employee - Control your agent from anywhere',
+  title: 'Abdullah Junior | AI Chief of Staff',
+  description: 'Your AI-powered Digital Employee - Automate emails, tasks, social media, and scheduling',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -27,7 +25,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#030712',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -54,55 +52,20 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-            <div className="relative flex min-h-screen flex-col">
-                {/* Header */}
-                <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <div className="container flex h-14 items-center px-4">
-                        <div className="mr-4 flex">
-                            <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">AJ</span>
-                                </div>
-                                <span className="font-bold hidden sm:inline-block">Abdullah Junior</span>
-                            </Link>
-                            <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-                                <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                                    Dashboard
-                                </Link>
-                                <Link href="/skills" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                                    Skills
-                                </Link>
-                            </nav>
-                        </div>
-                        <div className="flex flex-1 items-center justify-end space-x-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs text-muted-foreground hidden sm:inline">Online</span>
-                            </div>
-                            <ModeToggle />
-                        </div>
-                    </div>
-                </header>
+            <div className="flex min-h-screen">
+              {/* Sidebar */}
+              <Sidebar />
 
-                {/* Main content */}
-                <main className="flex-1 container py-4 md:py-6 px-4 pb-20 md:pb-6">
-                    {children}
-                </main>
-
-                {/* Mobile navigation */}
-                <MobileNav />
-
-                {/* Desktop footer */}
-                <footer className="hidden md:block py-6 border-t">
-                    <div className="container text-center text-sm text-muted-foreground">
-                        Digital FTE - Platinum Tier
-                    </div>
-                </footer>
+              {/* Main content area */}
+              <main className="flex-1 overflow-auto">
+                <div className="p-6 md:p-8 max-w-[1400px]">
+                  {children}
+                </div>
+              </main>
             </div>
 
-            {/* PWA Components */}
             <PWAProvider />
-            <Toaster position="top-center" />
+            <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
     </html>

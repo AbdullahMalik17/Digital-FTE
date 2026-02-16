@@ -1,98 +1,172 @@
 import { fetchTasks, fetchFinancials } from '@/app/actions'
 import TaskBoard from '@/components/TaskBoard'
-import AgentTerminal from '@/components/AgentTerminal'
 import AgentChat from '@/components/AgentChat'
-import FinancialWidget from '@/components/widgets/FinancialWidget'
-import SocialWidget from '@/components/widgets/SocialWidget'
 import { DailyDigestCard, FollowUpsWidget, AnalyticsCard } from '@/components/widgets'
 
-// Cache for 30 seconds instead of force-dynamic
 export const revalidate = 30
 
 export default async function Home() {
-  // Wrap in try-catch with timeout to prevent slow SSR
-  let pending = [], completed = [], financials = null;
+  let pending: any[] = [], completed: any[] = [];
 
   try {
     const tasksPromise = fetchTasks();
-    const financialsPromise = fetchFinancials();
-
-    // Race with timeout (5 seconds max)
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('SSR timeout')), 5000)
     );
-
-    const results = await Promise.race([
-      Promise.all([tasksPromise, financialsPromise]),
-      timeoutPromise
-    ]);
-
-    if (Array.isArray(results)) {
-      ({ pending, completed } = results[0] as any);
-      financials = results[1];
+    const results = await Promise.race([tasksPromise, timeoutPromise]);
+    if (results && typeof results === 'object') {
+      ({ pending, completed } = results as any);
     }
-  } catch (error) {
-    console.error('SSR data fetch failed, using empty state:', error);
-    // Page will render with empty data, components will fetch client-side
+  } catch {
+    // Render with empty data
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 p-6">
-        <div className="max-w-[1600px] mx-auto space-y-6">
-            {/* Header */}
-            <header className="flex justify-between items-end border-b border-zinc-800 pb-6">
-                <div>
-                    <h1 className="text-4xl font-black tracking-tighter text-white mb-1">
-                        ABDULLAH <span className="text-blue-500">JUNIOR</span>
-                    </h1>
-                    <p className="text-sm font-mono text-zinc-500">
-                        DIGITAL FTE • PLATINUM TIER • CLOUD/LOCAL HYBRID
-                    </p>
-                </div>
-                <div className="flex gap-4 text-xs font-mono">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span>SYSTEM ONLINE</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span>SYNC ACTIVE</span>
-                    </div>
-                </div>
-            </header>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="animate-fade-in">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Good {getGreeting()}, <span className="gradient-text">Abdullah</span>
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Here&apos;s what&apos;s happening with your digital employee today.
+        </p>
+      </div>
 
-            {/* Daily Digest Banner */}
-            <DailyDigestCard />
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Pending"
+          value={pending.length}
+          icon="📋"
+          trend="+2 today"
+          color="blue"
+          delay={1}
+        />
+        <StatCard
+          label="In Progress"
+          value={0}
+          icon="🔄"
+          trend="All on track"
+          color="amber"
+          delay={2}
+        />
+        <StatCard
+          label="Done Today"
+          value={completed.length}
+          icon="✅"
+          trend="Great progress"
+          color="green"
+          delay={3}
+        />
+        <StatCard
+          label="Urgent"
+          value={0}
+          icon="🔴"
+          trend="All clear"
+          color="red"
+          delay={4}
+        />
+      </div>
 
-            {/* Main Command Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Daily Digest */}
+      <div className="animate-fade-in-delay-2">
+        <DailyDigestCard />
+      </div>
 
-                {/* Left Column: Input & Status */}
-                <div className="space-y-6 lg:col-span-1">
-                    <AgentChat />
-                    <FollowUpsWidget />
-                    <AnalyticsCard />
-                    <FinancialWidget data={financials} />
-                    <SocialWidget />
-                </div>
-
-                {/* Middle/Right Column: Terminal (Wide) */}
-                <div className="lg:col-span-3 space-y-6">
-                    <AgentTerminal />
-
-                    {/* Task Board embedded here for better width */}
-                    <div className="pt-4">
-                        <div className="flex items-center gap-2 mb-4">
-                            <h2 className="text-xl font-bold text-white">Active Operations</h2>
-                            <span className="px-2 py-0.5 rounded text-xs bg-zinc-800 text-zinc-400">
-                                {pending.length} PENDING
-                            </span>
-                        </div>
-                        <TaskBoard initialPending={pending} initialCompleted={completed} />
-                    </div>
-                </div>
-            </div>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Chat + Follow-ups */}
+        <div className="space-y-6">
+          <div className="animate-fade-in-delay-3">
+            <AgentChat />
+          </div>
+          <div className="animate-fade-in-delay-4">
+            <FollowUpsWidget />
+          </div>
         </div>
+
+        {/* Right: Task Board (wider) */}
+        <div className="lg:col-span-2 animate-fade-in-delay-3">
+          <div className="glass-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold">Active Operations</h2>
+                <p className="text-sm text-muted-foreground">
+                  {pending.length} pending tasks
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  Live
+                </span>
+              </div>
+            </div>
+            <TaskBoard initialPending={pending} initialCompleted={completed} />
+          </div>
+        </div>
+      </div>
+
+      {/* Agent Skills Overview */}
+      <div className="animate-fade-in-delay-4">
+        <h2 className="text-lg font-semibold mb-4">Agent Skills</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <SkillCard emoji="📧" name="Gmail" status="active" actions={24} />
+          <SkillCard emoji="💬" name="WhatsApp" status="active" actions={12} />
+          <SkillCard emoji="💼" name="LinkedIn" status="active" actions={8} />
+          <SkillCard emoji="📱" name="Telegram" status="active" actions={45} />
+          <SkillCard emoji="📅" name="Calendar" status="active" actions={6} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'morning'
+  if (hour < 17) return 'afternoon'
+  return 'evening'
+}
+
+function StatCard({
+  label, value, icon, trend, color, delay
+}: {
+  label: string; value: number; icon: string; trend: string;
+  color: 'blue' | 'green' | 'amber' | 'red'; delay: number
+}) {
+  const colorMap = {
+    blue: 'from-blue-500/10 to-blue-600/5 border-blue-500/20',
+    green: 'from-green-500/10 to-green-600/5 border-green-500/20',
+    amber: 'from-amber-500/10 to-amber-600/5 border-amber-500/20',
+    red: 'from-red-500/10 to-red-600/5 border-red-500/20',
+  }
+
+  return (
+    <div className={`animate-fade-in-delay-${delay} stat-card bg-gradient-to-br ${colorMap[color]}`}>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-2xl">{icon}</span>
+        <span className="text-xs text-muted-foreground">{trend}</span>
+      </div>
+      <div className="counter-value">{value}</div>
+      <div className="text-sm text-muted-foreground mt-1">{label}</div>
+    </div>
+  )
+}
+
+function SkillCard({
+  emoji, name, status, actions
+}: {
+  emoji: string; name: string; status: string; actions: number
+}) {
+  return (
+    <div className="glass-card p-4 flex flex-col items-center gap-2 text-center hover:border-primary/20 transition-all duration-200 cursor-default">
+      <span className="text-2xl">{emoji}</span>
+      <span className="text-sm font-medium">{name}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+        <span className="text-xs text-muted-foreground">{actions} actions</span>
+      </div>
     </div>
   )
 }
