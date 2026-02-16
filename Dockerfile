@@ -26,7 +26,7 @@ COPY Vault/ ./Vault/
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create necessary directories
-RUN mkdir -p config/push_notifications Vault/Logs Vault/Needs_Action Vault/Pending_Approval Vault/Done /var/log/supervisor
+RUN mkdir -p config/push_notifications Vault/Logs/audit Vault/Needs_Action Vault/Pending_Approval Vault/Approved Vault/In_Progress Vault/Done /var/log/supervisor
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
