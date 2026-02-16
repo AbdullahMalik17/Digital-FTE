@@ -9,8 +9,10 @@ import asyncio
 import logging
 import signal
 import sys
+import os
+from pathlib import Path
 
-from .base import BaseAgent
+from .base import BaseAgent, VAULT_PATH
 from .inbox_triage import InboxTriageAgent
 from .social_media import SocialMediaAgent
 from .task_orchestrator import TaskOrchestratorAgent
@@ -22,11 +24,51 @@ logging.basicConfig(
 logger = logging.getLogger("agent_runner")
 
 
+def ensure_vault_dirs():
+    """Create all required Vault directories."""
+    dirs = [
+        "Needs_Action", "In_Progress", "Pending_Approval",
+        "Approved", "Done", "Suggestions",
+        "Logs", "Logs/audit",
+    ]
+    for d in dirs:
+        (VAULT_PATH / d).mkdir(parents=True, exist_ok=True)
+    logger.info(f"Vault directories verified at {VAULT_PATH}")
+
+
+async def run_agent_with_retry(agent: BaseAgent, max_retries: int = 5):
+    """Run an agent with automatic restart on crash."""
+    retries = 0
+    while retries < max_retries:
+        try:
+            await agent.start()
+            break  # Clean exit
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            retries += 1
+            logger.error(f"[{agent.name}] Crashed (attempt {retries}/{max_retries}): {e}")
+            if retries < max_retries:
+                wait = min(retries * 5, 30)
+                logger.info(f"[{agent.name}] Restarting in {wait}s...")
+                await asyncio.sleep(wait)
+            else:
+                logger.error(f"[{agent.name}] Max retries reached, giving up")
+
+
 async def main():
     """Start all agents and the orchestrator."""
     logger.info("=" * 60)
     logger.info("Abdullah Junior - Agent Team Starting")
     logger.info("=" * 60)
+
+    # Ensure vault structure
+    ensure_vault_dirs()
+
+    # Log environment
+    telegram_configured = bool(os.getenv("TELEGRAM_BOT_TOKEN"))
+    logger.info(f"Telegram: {'configured' if telegram_configured else 'not configured (notifications disabled)'}")
+    logger.info(f"Vault path: {VAULT_PATH}")
 
     # Create agents
     inbox = InboxTriageAgent(poll_interval=30)
@@ -43,8 +85,8 @@ async def main():
     for agent in agents:
         logger.info(f"  - {agent.name}: {agent.description}")
 
-    # Start all agents concurrently
-    tasks = [asyncio.create_task(agent.start()) for agent in agents]
+    # Start all agents concurrently with retry
+    tasks = [asyncio.create_task(run_agent_with_retry(agent)) for agent in agents]
 
     # Handle shutdown
     loop = asyncio.get_event_loop()
@@ -58,8 +100,7 @@ async def main():
         try:
             loop.add_signal_handler(sig, shutdown)
         except NotImplementedError:
-            # Windows doesn't support add_signal_handler
-            pass
+            pass  # Windows doesn't support add_signal_handler
 
     try:
         await asyncio.gather(*tasks)

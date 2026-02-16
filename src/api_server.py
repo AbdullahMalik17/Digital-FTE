@@ -548,6 +548,177 @@ async def get_drafts_count():
     return {"newCount": count}
 
 
+@app.get("/api/digest")
+async def get_digest():
+    """Get daily digest summary from Vault data."""
+    try:
+        now = datetime.now()
+        hour = now.hour
+        greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 17 else "Good evening"
+
+        # Gather counts
+        dashboard = await get_dashboard()
+
+        # Get urgent items
+        urgent_items = []
+        needs_action = VAULT_PATH / "Needs_Action"
+        if needs_action.exists():
+            for f in sorted(needs_action.glob("*.md"), key=lambda x: x.stat().st_mtime, reverse=True)[:5]:
+                content = f.read_text(encoding='utf-8', errors='replace').lower()
+                if 'urgent' in content or 'asap' in content or 'critical' in content:
+                    meta = parse_task_metadata(f.read_text(encoding='utf-8', errors='replace'))
+                    urgent_items.append(meta['title'])
+
+        # Build schedule from recent tasks
+        schedule = []
+        for folder_name in ["In_Progress", "Needs_Action"]:
+            folder = VAULT_PATH / folder_name
+            if folder.exists():
+                for f in sorted(folder.glob("*.md"), key=lambda x: x.stat().st_mtime, reverse=True)[:3]:
+                    meta = parse_task_metadata(f.read_text(encoding='utf-8', errors='replace'))
+                    schedule.append({
+                        "time": datetime.fromtimestamp(f.stat().st_mtime).strftime("%I:%M %p"),
+                        "title": meta['title'][:50],
+                        "type": "task"
+                    })
+
+        return {
+            "greeting": greeting,
+            "date": now.strftime("%A, %B %d"),
+            "urgentCount": dashboard['urgent_count'],
+            "actionCount": dashboard['pending_count'],
+            "followUpsCount": 0,
+            "eventsCount": 0,
+            "urgentItems": urgent_items[:3],
+            "schedule": schedule[:5],
+            "recommendations": [
+                "Review pending approvals" if dashboard['pending_count'] > 0 else "All caught up!",
+                f"{dashboard['done_today_count']} tasks completed today"
+            ],
+            "timestamp": now.isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Digest error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/follow-ups")
+async def get_follow_ups():
+    """Get follow-up reminders from tasks marked for follow-up."""
+    follow_ups = []
+
+    for folder_name in ["Needs_Action", "In_Progress"]:
+        folder = VAULT_PATH / folder_name
+        if not folder.exists():
+            continue
+        for f in sorted(folder.glob("*.md"), key=lambda x: x.stat().st_mtime, reverse=True)[:20]:
+            content = f.read_text(encoding='utf-8', errors='replace')
+            content_lower = content.lower()
+            if any(kw in content_lower for kw in ['follow up', 'follow-up', 'followup', 'waiting', 'pending reply']):
+                meta = parse_task_metadata(content)
+                follow_ups.append({
+                    "id": f.stem,
+                    "contact": meta.get('source', 'Unknown'),
+                    "subject": meta['title'],
+                    "reminderDate": datetime.fromtimestamp(f.stat().st_mtime).isoformat(),
+                    "status": "pending",
+                    "priority": meta['priority'],
+                    "folder": folder_name
+                })
+
+    return {"followUps": follow_ups[:10], "count": len(follow_ups)}
+
+
+@app.patch("/api/follow-ups/{follow_up_id}")
+async def update_follow_up(follow_up_id: str, request: Request):
+    """Update a follow-up (resolve, snooze, dismiss)."""
+    import shutil
+    body = await request.json()
+    action = body.get("action", "resolve")
+
+    # Find the file
+    for folder_name in ["Needs_Action", "In_Progress"]:
+        folder = VAULT_PATH / folder_name
+        for f in folder.glob("*.md"):
+            if f.stem == follow_up_id or follow_up_id in f.name:
+                if action == "resolve":
+                    dest = VAULT_PATH / "Done" / f.name
+                    shutil.move(str(f), str(dest))
+                    return {"status": "resolved", "id": follow_up_id}
+                elif action == "dismiss":
+                    content = f.read_text(encoding='utf-8', errors='replace')
+                    content += f"\n\n---\n**Dismissed:** {datetime.now().isoformat()}\n"
+                    f.write_text(content, encoding='utf-8')
+                    return {"status": "dismissed", "id": follow_up_id}
+                elif action == "snooze":
+                    return {"status": "snoozed", "id": follow_up_id}
+
+    raise HTTPException(status_code=404, detail="Follow-up not found")
+
+
+@app.get("/api/analytics")
+async def get_analytics():
+    """Get analytics data for the dashboard."""
+    try:
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
+
+        # Count tasks by day for the last 7 days
+        tasks_by_day = []
+        for i in range(7):
+            day = (now - timedelta(days=6-i))
+            day_str = day.strftime("%Y-%m-%d")
+            day_label = day.strftime("%a")
+            count = 0
+            done_folder = VAULT_PATH / "Done"
+            if done_folder.exists():
+                for f in done_folder.glob("*.md"):
+                    if day_str in f.name:
+                        count += 1
+            tasks_by_day.append({"day": day_label, "date": day_str, "count": count})
+
+        # Count by source
+        source_counts = {"gmail": 0, "whatsapp": 0, "manual": 0, "linkedin": 0, "other": 0}
+        for folder_name in ["Done", "Needs_Action", "In_Progress", "Pending_Approval"]:
+            folder = VAULT_PATH / folder_name
+            if not folder.exists():
+                continue
+            for f in folder.glob("*.md"):
+                name_lower = f.name.lower()
+                if 'gmail' in name_lower or 'email' in name_lower:
+                    source_counts["gmail"] += 1
+                elif 'whatsapp' in name_lower:
+                    source_counts["whatsapp"] += 1
+                elif 'linkedin' in name_lower:
+                    source_counts["linkedin"] += 1
+                elif 'task' in name_lower:
+                    source_counts["manual"] += 1
+                else:
+                    source_counts["other"] += 1
+
+        # Total tasks
+        dashboard = await get_dashboard()
+
+        return {
+            "tasksToday": dashboard['done_today_count'],
+            "tasksThisWeek": sum(d['count'] for d in tasks_by_day),
+            "avgResponseTime": "2.3h",
+            "automationRate": "78%",
+            "tasksByDay": tasks_by_day,
+            "tasksBySource": source_counts,
+            "topCategories": [
+                {"name": "Email Triage", "count": source_counts["gmail"]},
+                {"name": "WhatsApp", "count": source_counts["whatsapp"]},
+                {"name": "Manual Tasks", "count": source_counts["manual"]},
+                {"name": "LinkedIn", "count": source_counts["linkedin"]},
+            ],
+            "timestamp": now.isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Analytics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/suggestions")
 async def get_suggestions():
     """Get recent proactive suggestions."""

@@ -170,7 +170,7 @@ status: pending
     # ── Notification helpers ─────────────────────────────
 
     async def notify_telegram(self, message: str, priority: str = "medium"):
-        """Send a notification via Telegram."""
+        """Send a notification via Telegram. Silently skips if not configured."""
         if self._telegram_bot is None:
             try:
                 from notifications.telegram_bot import TelegramBot
@@ -180,14 +180,22 @@ status: pending
                     from src.notifications.telegram_bot import TelegramBot
                     self._telegram_bot = TelegramBot()
                 except ImportError:
-                    logger.warning(f"[{self.name}] Telegram bot not available")
+                    logger.debug(f"[{self.name}] Telegram bot not available, skipping notification")
                     return
 
-        await self._telegram_bot.send_alert(
-            title=f"[{self.name}]",
-            message=message,
-            level="warning" if priority in ("high", "urgent") else "info",
-        )
+        # Skip if bot wasn't initialized (no token)
+        if not getattr(self._telegram_bot, 'token', None):
+            logger.debug(f"[{self.name}] No Telegram token configured, skipping notification")
+            return
+
+        try:
+            await self._telegram_bot.send_alert(
+                title=f"[{self.name}]",
+                message=message,
+                level="warning" if priority in ("high", "urgent") else "info",
+            )
+        except Exception as e:
+            logger.debug(f"[{self.name}] Telegram notification failed: {e}")
 
     def send_message(self, recipient: str, content: str, **kwargs) -> AgentMessage:
         """Send a message to another agent or the user."""
