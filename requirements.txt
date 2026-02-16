@@ -36,8 +36,9 @@ cryptography>=41.0.0
 # Firebase Cloud Messaging (FCM) for Mobile Push
 firebase-admin>=6.0.0
 
-# Telegram Bot (fallback notifications)
+# Telegram Bot
 python-telegram-bot>=20.0
+aiohttp>=3.9.0
 
 # FastAPI (for notification API)
 fastapi>=0.104.0
