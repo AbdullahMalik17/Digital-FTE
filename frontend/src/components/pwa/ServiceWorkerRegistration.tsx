@@ -66,31 +66,3 @@ function showUpdateNotification() {
   // Alternatively, you can dispatch a custom event for the UI to handle
   window.dispatchEvent(new CustomEvent('pwa-update-available'));
 }
-
-// Export utility functions for use elsewhere
-export async function checkForUpdate(): Promise<boolean> {
-  if ('serviceWorker' in navigator) {
-    const registration = await navigator.serviceWorker.ready;
-    await registration.update();
-    return registration.waiting !== null;
-  }
-  return false;
-}
-
-export async function applyUpdate(): Promise<void> {
-  if ('serviceWorker' in navigator) {
-    const registration = await navigator.serviceWorker.ready;
-    if (registration.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
-    }
-  }
-}
-
-export async function unregisterServiceWorker(): Promise<boolean> {
-  if ('serviceWorker' in navigator) {
-    const registration = await navigator.serviceWorker.ready;
-    return registration.unregister();
-  }
-  return false;
-}

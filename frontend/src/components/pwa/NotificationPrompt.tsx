@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, X, BellOff } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { subscribeToPush } from '@/lib/pwa-utils';
 
 export default function NotificationPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -96,137 +97,6 @@ export default function NotificationPrompt() {
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// Subscribe to push notifications
-async function subscribeToPush() {
-  try {
-    const registration = await navigator.serviceWorker.ready;
-
-    // Check if push is supported
-    if (!registration.pushManager) {
-      console.log('Push notifications not supported');
-      return;
-    }
-
-    // Get existing subscription or create new one
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (!subscription) {
-      // Get VAPID public key from server
-      let vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
-      // Try to fetch from API if not in env
-      if (!vapidPublicKey) {
-        try {
-          const response = await fetch('/api/notifications/vapid-public-key');
-          if (response.ok) {
-            const data = await response.json();
-            vapidPublicKey = data.publicKey;
-          }
-        } catch (e) {
-          console.log('Could not fetch VAPID key from API');
-        }
-      }
-
-      if (!vapidPublicKey) {
-        console.log('VAPID public key not configured');
-        return;
-      }
-
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      });
-    }
-
-    // Get device name for identification
-    const deviceName = getDeviceName();
-
-    // Send subscription to server using our new API
-    const response = await fetch('/api/notifications/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
-          auth: arrayBufferToBase64(subscription.getKey('auth')),
-        },
-        device_name: deviceName,
-      }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Push subscription registered:', result.device_name);
-    } else {
-      console.error('Failed to register subscription');
-    }
-  } catch (error) {
-    console.error('Error subscribing to push:', error);
-  }
-}
-
-// Get friendly device name
-function getDeviceName(): string {
-  const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua)) return 'iPhone';
-  if (/Android/.test(ua)) return 'Android Phone';
-  if (/Windows/.test(ua)) return 'Windows PC';
-  if (/Mac/.test(ua)) return 'Mac';
-  return 'Unknown Device';
-}
-
-// Convert ArrayBuffer to base64
-function arrayBufferToBase64(buffer: ArrayBuffer | null): string {
-  if (!buffer) return '';
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
-
-// Helper function to convert VAPID key
-function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray.buffer;
-}
-
-// Export for use in other components
-export function NotificationBanner({
-  enabled,
-  onEnable
-}: {
-  enabled: boolean;
-  onEnable: () => void;
-}) {
-  if (enabled) return null;
-
-  return (
-    <div className="bg-yellow-600/10 border border-yellow-600/20 rounded-lg p-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 text-sm">
-        <BellOff className="w-4 h-4 text-yellow-500" />
-        <span className="text-yellow-200">Notifications are disabled</span>
-      </div>
-      <Button
-        onClick={onEnable}
-        variant="ghost"
-        size="sm"
-        className="text-yellow-500 hover:text-yellow-400 hover:bg-yellow-600/10"
-      >
-        Enable
-      </Button>
     </div>
   );
 }

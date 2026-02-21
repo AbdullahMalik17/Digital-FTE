@@ -26,74 +26,91 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-border/50 bg-card/50">
-        <div className="flex flex-col flex-1 overflow-y-auto">
+      <aside className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 border-r border-white/5 bg-background/50 backdrop-blur-3xl">
+        <div className="flex flex-col flex-1 overflow-y-auto scrollbar-hide">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-border/50">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-lg glow-blue">
-              <span className="text-white font-bold text-sm">AJ</span>
+          <div className="flex items-center gap-4 px-8 py-8 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-primary/20 group relative overflow-hidden">
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <span className="text-white font-black text-lg tracking-tighter relative z-10">AJ</span>
             </div>
             <div>
-              <h1 className="font-bold text-sm tracking-tight">Abdullah Junior</h1>
-              <p className="text-[11px] text-muted-foreground">AI Chief of Staff</p>
+              <h1 className="font-black text-base tracking-tighter leading-none">Abdullah <span className="text-primary">Junior</span></h1>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">AI Executive FTE</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-1">
-            <p className="px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Main
-            </p>
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'sidebar-link',
-                    isActive && 'active'
-                  )}
-                >
-                  <item.icon className={cn('w-4 h-4', isActive ? 'text-primary' : 'text-muted-foreground')} />
-                  {item.name}
-                </Link>
-              )
-            })}
+          <nav className="flex-1 px-4 py-8 space-y-8">
+            <div className="space-y-1">
+              <p className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-4">
+                Operations
+              </p>
+              {navigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'sidebar-link group',
+                      isActive && 'active'
+                    )}
+                  >
+                    <div className={cn(
+                      'p-2 rounded-lg transition-colors',
+                      isActive ? 'bg-primary/20' : 'bg-transparent group-hover:bg-white/5'
+                    )}>
+                      <item.icon className={cn('w-4 h-4', isActive ? 'text-primary' : 'text-muted-foreground/60')} />
+                    </div>
+                    <span className="font-semibold tracking-tight">{item.name}</span>
+                    {isActive && <div className="ml-auto w-1 h-4 bg-primary rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
+                  </Link>
+                )
+              })}
+            </div>
 
-            <div className="pt-6">
-              <p className="px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                Integrations
+            <div className="space-y-2">
+              <p className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.2em] mb-4">
+                Connected Nodes
               </p>
               {integrations.map((item) => (
-                <div key={item.name} className="sidebar-link cursor-default">
-                  <span className="text-base">{item.icon}</span>
-                  <span className="flex-1">{item.name}</span>
-                  <span className={cn(
-                    'w-1.5 h-1.5 rounded-full',
-                    item.status === 'active' ? 'bg-green-500' : 'bg-zinc-500'
-                  )} />
+                <div key={item.name} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/5 cursor-default group">
+                  <span className="text-xl group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold tracking-tight">{item.name}</p>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Protocol Active</p>
+                  </div>
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </div>
                 </div>
               ))}
             </div>
           </nav>
 
           {/* Footer */}
-          <div className="px-4 py-4 border-t border-border/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full pulse-ring" />
-                <span className="text-xs text-muted-foreground">System Online</span>
+          <div className="px-6 py-6 border-t border-white/5 bg-gradient-to-t from-white/[0.01] to-transparent">
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Mainframe</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-bold mt-1">Uptime 99.9%</span>
+                </div>
+                <ModeToggle />
               </div>
-              <ModeToggle />
             </div>
           </div>
         </div>
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur-xl safe-area-bottom">
-        <div className="flex items-center justify-around py-2">
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 glass-card bg-background/80 backdrop-blur-2xl border-white/10 shadow-2xl safe-area-bottom px-2 rounded-[2rem]">
+        <div className="flex items-center justify-around py-3">
           {navigation.map((item) => {
             const isActive = pathname === item.href
             return (
@@ -101,12 +118,12 @@ export default function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
+                  'flex flex-col items-center gap-1.5 px-5 py-2 rounded-2xl transition-all active:scale-90',
+                  isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground/60'
                 )}
               >
                 <item.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.name}</span>
+                <span className="text-[10px] font-bold uppercase tracking-tighter">{item.name}</span>
               </Link>
             )
           })}
@@ -114,12 +131,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Spacer for sidebar on desktop */}
-      <div className="hidden md:block md:w-64 flex-shrink-0" />
+      <div className="hidden md:block md:w-72 flex-shrink-0" />
     </>
   )
 }
-
-// ── Inline SVG Icons (avoids lucide-react dependency issues) ──
 
 function LayoutDashboardIcon({ className }: { className?: string }) {
   return (

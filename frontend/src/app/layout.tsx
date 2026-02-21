@@ -5,9 +5,15 @@ import { cn } from '@/lib/utils'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import PWAProvider from '@/components/pwa/PWAProvider'
-import Sidebar from '@/components/Sidebar'
+import dynamic from 'next/dynamic'
 
 const inter = Inter({ subsets: ['latin'] })
+
+// Dynamic import for client component with SSR disabled
+const Sidebar = dynamic(() => import('@/components/Sidebar'), { 
+  ssr: false,
+  loading: () => <div className="hidden md:flex md:w-64" /> 
+})
 
 export const metadata: Metadata = {
   title: 'Abdullah Junior | AI Chief of Staff',
@@ -45,7 +51,17 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={cn(inter.className, "min-h-screen bg-background font-sans antialiased")}>
+      <body className={cn(inter.className, "min-h-screen bg-background font-sans antialiased relative")}>
+        {/* Global Noise Overlay */}
+        <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.015] mix-blend-overlay">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <filter id="noiseFilter">
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+          </svg>
+        </div>
+
         <ThemeProvider
             attribute="class"
             defaultTheme="dark"

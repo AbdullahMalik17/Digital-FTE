@@ -36,7 +36,14 @@
       "Bash(git commit:*)",
       "Bash(npm view:*)",
       "WebFetch(domain:expo.dev)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth status:*)",
+      "Bash(sudo tee:*)",
+      "Bash(sudo apt-get update:*)",
+      "Bash(sudo apt-get install:*)",
+      "Bash(sh:*)",
+      "Bash(/home/abdullah/.fly/bin/flyctl auth whoami:*)"
     ]
   }
 }

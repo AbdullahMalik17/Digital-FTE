@@ -27,14 +27,22 @@ export default function AgentChat() {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 space-y-4">
+    <div className="glass-card p-6 space-y-6 group transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 border-primary/10">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-zinc-100">Command Input</h3>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl animate-pulse">
+            🤖
+          </div>
+          <div>
+            <h3 className="font-bold text-foreground tracking-tight">Direct Command</h3>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Neural Interface Active</p>
+          </div>
+        </div>
         <Select value={priority} onValueChange={setPriority}>
-          <SelectTrigger className="w-[120px] h-8 bg-zinc-800 border-zinc-700">
+          <SelectTrigger className="w-[140px] h-9 bg-background/50 border-white/5 backdrop-blur-md hover:bg-background/80 transition-colors">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="glass-card border-white/10">
             <SelectItem value="low">Low Priority</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High Priority</SelectItem>
@@ -45,8 +53,8 @@ export default function AgentChat() {
       
       <div className="relative">
         <Textarea 
-          placeholder="Ask Abdullah Junior to do something..."
-          className="bg-black/50 border-zinc-700 min-h-[100px] resize-none pr-4"
+          placeholder="What should Abdullah Junior execute next?"
+          className="bg-background/30 border-white/5 min-h-[120px] resize-none pr-4 rounded-xl focus-visible:ring-primary/30 focus-visible:border-primary/30 placeholder:text-muted-foreground/50 transition-all duration-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -56,18 +64,32 @@ export default function AgentChat() {
             }
           }}
         />
-        <div className="absolute bottom-2 right-2">
-          <span className="text-xs text-zinc-500">Press Enter to send</span>
+        <div className="absolute bottom-3 right-3 flex items-center gap-2">
+          <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span className="text-xs">↵</span> Enter
+          </kbd>
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </div>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Ready for transmission</span>
+        </div>
         <Button 
           onClick={handleSubmit} 
           disabled={sending}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 px-8 rounded-xl h-11 transition-all active:scale-95"
         >
-          {sending ? 'Sending...' : 'Transmit Order'}
+          {sending ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Transmitting...
+            </span>
+          ) : 'Transmit Order'}
         </Button>
       </div>
     </div>
