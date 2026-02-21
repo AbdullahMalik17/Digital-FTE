@@ -55,3 +55,10 @@ pytest-asyncio>=0.21.0
 
 # Spotify integration (optional)
 spotipy>=2.23.0
+
+# Discord integration (coming soon — uncomment when activating)
+# discord.py>=2.3.0
+
+# Slack integration (coming soon — uncomment when activating)
+# slack_bolt>=1.18.0
+# httpx>=0.25.0

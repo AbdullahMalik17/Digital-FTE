@@ -10,14 +10,19 @@ const navigation = [
   { name: 'Tasks', href: '/tasks', icon: CheckSquareIcon },
   { name: 'Skills', href: '/skills', icon: ZapIcon },
   { name: 'Analytics', href: '/analytics', icon: BarChart3Icon },
+  { name: 'Setup', href: '/setup', icon: GearIcon },
 ]
 
 const integrations = [
-  { name: 'Gmail', status: 'active', icon: '📧' },
-  { name: 'WhatsApp', status: 'active', icon: '💬' },
-  { name: 'LinkedIn', status: 'active', icon: '💼' },
-  { name: 'Telegram', status: 'active', icon: '📱' },
-  { name: 'Calendar', status: 'active', icon: '📅' },
+  { name: 'Gmail',       icon: '📧', active: true  },
+  { name: 'WhatsApp',    icon: '💬', active: true  },
+  { name: 'LinkedIn',    icon: '💼', active: true  },
+  { name: 'Telegram',    icon: '✈️', active: true  },
+  { name: 'Twitter / X', icon: '🐦', active: true  },
+  { name: 'Facebook',    icon: '📘', active: true  },
+  { name: 'Instagram',   icon: '📸', active: true  },
+  { name: 'Discord',     icon: '🎮', active: false },
+  { name: 'Slack',       icon: '💡', active: false },
 ]
 
 export default function Sidebar() {
@@ -75,15 +80,23 @@ export default function Sidebar() {
                 Connected Nodes
               </p>
               {integrations.map((item) => (
-                <div key={item.name} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/5 cursor-default group">
-                  <span className="text-xl group-hover:scale-110 transition-transform">{item.icon}</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold tracking-tight">{item.name}</p>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Protocol Active</p>
+                <div key={item.name} className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/5 cursor-default group">
+                  <span className="text-lg group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold tracking-tight truncate">{item.name}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: item.active ? 'rgb(74 222 128 / 0.7)' : 'rgb(156 163 175 / 0.5)' }}>
+                      {item.active ? 'Protocol Active' : 'Coming Soon'}
+                    </p>
                   </div>
-                  <div className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-40"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  <div className="relative flex h-2 w-2 flex-shrink-0">
+                    {item.active ? (
+                      <>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-40"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </>
+                    ) : (
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-muted-foreground/30"></span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -164,6 +177,15 @@ function BarChart3Icon({ className }: { className?: string }) {
   return (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16h8"/><path d="M7 11h12"/><path d="M7 6h3"/>
+    </svg>
+  )
+}
+
+function GearIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+      <circle cx="12" cy="12" r="3"/>
     </svg>
   )
 }

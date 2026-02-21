@@ -148,7 +148,7 @@ export default function TasksPage() {
   const filteredPending = pendingTasks.filter((task) => {
     const matchesSearch =
       task.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.filename.toLowerCase().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (task.title && task.title.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesPriority = filterPriority === 'all' || task.priority === filterPriority || task.importance === filterPriority
     const matchesSource = filterSource === 'all' || task.source === filterSource

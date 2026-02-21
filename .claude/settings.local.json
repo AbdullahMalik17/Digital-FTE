@@ -43,7 +43,8 @@
       "Bash(sudo apt-get update:*)",
       "Bash(sudo apt-get install:*)",
       "Bash(sh:*)",
-      "Bash(/home/abdullah/.fly/bin/flyctl auth whoami:*)"
+      "Bash(/home/abdullah/.fly/bin/flyctl auth whoami:*)",
+      "WebFetch(domain:openclaw.ai)"
     ]
   }
 }

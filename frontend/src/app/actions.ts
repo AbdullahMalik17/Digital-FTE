@@ -1,6 +1,7 @@
 'use server'
 
-import { getPendingTasks, getCompletedTasks, createTask, getSkills, getLogs, getLatestFinancials } from '@/lib/vault';
+import { getPendingTasks, getCompletedTasks, createTask, getLogs, getLatestFinancials } from '@/lib/vault';
+import { getSkills } from '@/lib/skills';
 import type { Task, Skill } from '@/types';
 import { revalidatePath } from 'next/cache';
 

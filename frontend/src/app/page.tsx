@@ -34,7 +34,7 @@ export default async function Home() {
             Good {getGreeting()}, <span className="gradient-text">Abdullah</span>
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Your digital employee is monitoring <span className="text-foreground font-medium underline decoration-primary/30 underline-offset-4">5 channels</span> for you today.
+            Your digital employee is monitoring <span className="text-foreground font-medium underline decoration-primary/30 underline-offset-4">9 channels</span> for you today.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -138,18 +138,25 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Agent Skills Overview */}
+      {/* Integration Channels Overview */}
       <div className="animate-fade-in-delay-4">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold tracking-tight">Enterprise Capabilities</h2>
-          <button className="text-sm font-semibold text-primary hover:underline">View Intelligence Matrix →</button>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Connected Channels</h2>
+            <p className="text-muted-foreground text-sm mt-1">Active integrations from <code className="text-xs bg-muted px-1.5 py-0.5 rounded">config/integrations.env</code></p>
+          </div>
+          <a href="/skills" className="text-sm font-semibold text-primary hover:underline">View All Skills →</a>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <SkillCard emoji="📧" name="Gmail" status="active" actions={24} color="blue" />
-          <SkillCard emoji="💬" name="WhatsApp" status="active" actions={12} color="green" />
-          <SkillCard emoji="💼" name="LinkedIn" status="active" actions={8} color="indigo" />
-          <SkillCard emoji="📱" name="Meta" status="active" actions={45} color="blue" />
-          <SkillCard emoji="🏢" name="Odoo" status="active" actions={6} color="purple" />
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
+          <SkillCard emoji="📧" name="Gmail"       status="active"  actions={24} color="red"    />
+          <SkillCard emoji="💬" name="WhatsApp"    status="active"  actions={12} color="green"  />
+          <SkillCard emoji="💼" name="LinkedIn"    status="active"  actions={8}  color="blue"   />
+          <SkillCard emoji="✈️" name="Telegram"    status="active"  actions={31} color="sky"    />
+          <SkillCard emoji="🐦" name="Twitter/X"   status="active"  actions={15} color="slate"  />
+          <SkillCard emoji="📘" name="Facebook"    status="active"  actions={9}  color="blue"   />
+          <SkillCard emoji="📸" name="Instagram"   status="active"  actions={7}  color="pink"   />
+          <SkillCard emoji="🎮" name="Discord"     status="soon"    actions={0}  color="indigo" />
+          <SkillCard emoji="💡" name="Slack"       status="soon"    actions={0}  color="amber"  />
         </div>
       </div>
     </div>
@@ -202,22 +209,27 @@ function StatCard({
 function SkillCard({
   emoji, name, status, actions, color
 }: {
-  emoji: string; name: string; status: string; actions: number; color: string;
+  emoji: string; name: string; status: 'active' | 'soon'; actions: number; color: string;
 }) {
+  const isSoon = status === 'soon'
   return (
-    <div className="glass-card p-5 flex flex-col items-center gap-3 text-center glass-card-hover cursor-pointer group">
-      <div className={`w-14 h-14 rounded-2xl bg-${color}-500/10 flex items-center justify-center text-3xl group-hover:rotate-6 transition-transform shadow-inner`}>
+    <div className={`glass-card p-3 flex flex-col items-center gap-2 text-center glass-card-hover cursor-pointer group ${isSoon ? 'opacity-50' : ''}`}>
+      <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center text-xl group-hover:rotate-6 transition-transform shadow-inner`}>
         {emoji}
       </div>
-      <div className="space-y-1">
-        <span className="text-sm font-bold tracking-tight">{name}</span>
-        <div className="flex items-center justify-center gap-1.5">
-          <div className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+      <div className="space-y-0.5">
+        <span className="text-xs font-bold tracking-tight block leading-tight">{name}</span>
+        {isSoon ? (
+          <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">Soon</span>
+        ) : (
+          <div className="flex items-center justify-center gap-1">
+            <div className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+            </div>
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{actions} ops</span>
           </div>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{actions} ops</span>
-        </div>
+        )}
       </div>
     </div>
   )
