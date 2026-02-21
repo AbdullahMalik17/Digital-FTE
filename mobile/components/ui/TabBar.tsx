@@ -1,22 +1,37 @@
 import React from 'react';
-import { View, Platform, LayoutChangeEvent } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { GlassCard } from './glass/GlassCard';
-import { AnimatedButton } from './AnimatedButton';
-import { cn } from '../../utils/cn';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
-
-// Import icons to use directly if descriptors don't provide what we want, 
-// or we can rely on the options.tabBarIcon which we defined in _layout.
-// For a cleaner custom tab bar, we often just render what's passed in options.
+import { BlurView } from 'expo-blur';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
-    <View className="absolute bottom-8 left-4 right-4 items-center">
-      <GlassCard 
-        intensity={80} 
-        className="flex-row p-1.5 rounded-full border-white/20 bg-background/60"
-        style={{ width: '100%', maxWidth: 400 }}
+    <View style={{
+      position: 'absolute',
+      bottom: 24,
+      left: 12,
+      right: 12,
+      alignItems: 'center',
+    }}>
+      <BlurView
+        intensity={Platform.OS === 'ios' ? 80 : 0}
+        tint="dark"
+        style={{
+          width: '100%',
+          flexDirection: 'row',
+          borderRadius: 24,
+          overflow: 'hidden',
+          backgroundColor: Platform.OS === 'android' ? 'rgba(15,23,42,0.92)' : 'transparent',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.1)',
+          paddingHorizontal: 4,
+          paddingVertical: 6,
+        }}
       >
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -28,17 +43,13 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name, route.params);
             }
           };
 
           const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
+            navigation.emit({ type: 'tabLongPress', target: route.key });
           };
 
           return (
@@ -51,52 +62,78 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             />
           );
         })}
-      </GlassCard>
+      </BlurView>
     </View>
   );
 }
 
-function TabItem({ isFocused, options, onPress, onLongPress }: any) {
-  // Animation for the active indicator
-  const scale = useSharedValue(isFocused ? 1 : 0);
-  
-  React.useEffect(() => {
-    scale.value = withSpring(isFocused ? 1 : 0, { damping: 15 });
-  }, [isFocused]);
+function TabItem({ isFocused, options, onPress, onLongPress }: {
+  isFocused: boolean;
+  options: any;
+  onPress: () => void;
+  onLongPress: () => void;
+}) {
+  const scale = useSharedValue(1);
 
-  const activeIndicatorStyle = useAnimatedStyle(() => ({
+  const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: scale.value,
   }));
 
-  // We need to render the icon. options.tabBarIcon is a function (props) => Node
   const Icon = options.tabBarIcon;
-  const label = options.title !== undefined ? options.title : options.tabBarLabel;
+  const label = (options.title ?? options.tabBarLabel ?? '') as string;
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.88, { damping: 15 });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15 });
+  };
 
   return (
-    <AnimatedButton
-      label={""} // No text label for cleaner look, or maybe add it conditionally
+    <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      className={cn(
-        "flex-1 h-12 items-center justify-center rounded-full bg-transparent border-0",
-      )}
-      // We are customizing the content manually below, so we pass empty label/icon to AnimatedButton 
-      // but use its press animation capabilities.
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 4 }}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isFocused }}
+      accessibilityLabel={label}
     >
-      {/* Active Indicator Background */}
-      <Animated.View 
-        className="absolute inset-0 bg-primary/20 rounded-full"
-        style={activeIndicatorStyle}
-      />
-      
-      {/* Icon */}
-      <View className="items-center justify-center">
-        {Icon && <Icon color={isFocused ? '#60A5FA' : '#94A3B8'} size={24} />}
-        
-        {/* Optional: Tiny dot for active state if we prefer minimal look over background */}
-        {/* {isFocused && <View className="w-1 h-1 bg-primary rounded-full mt-1" />} */}
-      </View>
-    </AnimatedButton>
+      <Animated.View style={[{ alignItems: 'center', gap: 3 }, animatedStyle]}>
+        {/* Active pill background */}
+        {isFocused && (
+          <View style={{
+            position: 'absolute',
+            top: -6,
+            bottom: -6,
+            left: -12,
+            right: -12,
+            backgroundColor: 'rgba(96,165,250,0.15)',
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: 'rgba(96,165,250,0.25)',
+          }} />
+        )}
+
+        {/* Icon */}
+        <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+          {Icon && <Icon color={isFocused ? '#60A5FA' : '#64748b'} size={22} />}
+        </View>
+
+        {/* Label */}
+        <Text style={{
+          fontSize: 9,
+          fontWeight: isFocused ? '700' : '500',
+          color: isFocused ? '#60A5FA' : '#64748b',
+          letterSpacing: 0.3,
+          textTransform: 'uppercase',
+        }}>
+          {label}
+        </Text>
+      </Animated.View>
+    </Pressable>
   );
 }
