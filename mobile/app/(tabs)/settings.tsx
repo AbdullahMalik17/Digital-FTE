@@ -104,6 +104,49 @@ export default function SettingsScreen() {
             </View>
           </SettingsCard>
 
+          {/* Integrations Config */}
+          <SectionLabel text="Integrations Config" />
+          <SettingsCard>
+            <View style={{ padding: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <Zap size={18} color="#22c55e" />
+                <Text style={{ color: '#e2e8f0', fontWeight: '500' }}>9 channels · config/integrations.env</Text>
+              </View>
+              <Text style={{ color: '#64748b', fontSize: 12, marginBottom: 12 }}>
+                Credentials for all integrations are stored in config/integrations.env on the backend server.
+              </Text>
+              {[
+                { name: 'Gmail',       key: 'GOOGLE_CLIENT_ID',      active: true  },
+                { name: 'WhatsApp',    key: 'WHATSAPP_ENABLED',       active: true  },
+                { name: 'LinkedIn',    key: 'LINKEDIN_EMAIL',         active: true  },
+                { name: 'Telegram',    key: 'TELEGRAM_BOT_TOKEN',     active: true  },
+                { name: 'Twitter / X', key: 'TWITTER_API_KEY',        active: true  },
+                { name: 'Facebook',    key: 'FACEBOOK_ACCESS_TOKEN',  active: true  },
+                { name: 'Instagram',   key: 'INSTAGRAM_ACCESS_TOKEN', active: true  },
+                { name: 'Discord',     key: 'DISCORD_BOT_TOKEN',      active: false },
+                { name: 'Slack',       key: 'SLACK_BOT_TOKEN',        active: false },
+              ].map((item, index, arr) => (
+                <View
+                  key={item.key}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    paddingVertical: 8,
+                    borderTopWidth: index > 0 ? 1 : 0, borderTopColor: 'rgba(255,255,255,0.04)',
+                    opacity: item.active ? 1 : 0.5,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: item.active ? '#22c55e' : '#475569' }} />
+                    <Text style={{ color: '#e2e8f0', fontSize: 13 }}>{item.name}</Text>
+                  </View>
+                  <Text style={{ color: '#334155', fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>
+                    {item.key}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </SettingsCard>
+
           {/* Notifications */}
           <SectionLabel text="Notifications" />
           <SettingsCard>

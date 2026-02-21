@@ -170,6 +170,27 @@ export default function Dashboard() {
           </GlassCard>
         </View>
 
+        {/* Active Channels */}
+        <View style={{ paddingHorizontal: 24, marginTop: 28 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <Text style={{ color: '#e2e8f0', fontSize: 18, fontWeight: '600' }}>Active Channels</Text>
+            <TouchableOpacity onPress={() => router.push('/integrations' as any)}>
+              <Text style={{ color: '#3b82f6', fontSize: 13, fontWeight: '500' }}>View all →</Text>
+            </TouchableOpacity>
+          </View>
+          <GlassCard style={{ borderRadius: 16, borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.03)' }}>
+            <ChannelRow icon="📧" name="Gmail"       active last={false} />
+            <ChannelRow icon="💬" name="WhatsApp"    active last={false} />
+            <ChannelRow icon="💼" name="LinkedIn"    active last={false} />
+            <ChannelRow icon="✈️" name="Telegram"    active last={false} />
+            <ChannelRow icon="🐦" name="Twitter / X" active last={false} />
+            <ChannelRow icon="📘" name="Facebook"    active last={false} />
+            <ChannelRow icon="📸" name="Instagram"   active last={false} />
+            <ChannelRow icon="🎮" name="Discord"     active={false} last={false} />
+            <ChannelRow icon="💡" name="Slack"       active={false} last />
+          </GlassCard>
+        </View>
+
         {/* System Info */}
         <View style={{ paddingHorizontal: 24, marginTop: 28 }}>
           <GlassCard style={{ borderRadius: 16, borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1, backgroundColor: 'rgba(255,255,255,0.03)', padding: 16 }}>
@@ -184,7 +205,7 @@ export default function Dashboard() {
               </View>
             </View>
             <Text style={{ color: '#64748b', fontSize: 12, marginTop: 8 }}>
-              v2.0.0 • AI Chief of Staff • 5 agents running
+              v2.0.0 • AI Chief of Staff • 9 channels connected
             </Text>
           </GlassCard>
         </View>
@@ -270,6 +291,27 @@ function AgentRow({ icon, name, desc, status, last }: {
           color: status === 'active' ? '#22c55e' : '#64748b',
           fontSize: 11, fontWeight: '500',
         }}>{status}</Text>
+      </View>
+    </View>
+  );
+}
+
+function ChannelRow({ icon, name, active, last }: {
+  icon: string; name: string; active: boolean; last?: boolean;
+}) {
+  return (
+    <View style={{
+      flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12,
+      borderBottomWidth: last ? 0 : 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+      opacity: active ? 1 : 0.5,
+    }}>
+      <Text style={{ fontSize: 18, marginRight: 12 }}>{icon}</Text>
+      <Text style={{ flex: 1, color: '#e2e8f0', fontWeight: '500', fontSize: 14 }}>{name}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+        <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: active ? '#22c55e' : '#475569' }} />
+        <Text style={{ color: active ? '#22c55e' : '#475569', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {active ? 'Live' : 'Soon'}
+        </Text>
       </View>
     </View>
   );

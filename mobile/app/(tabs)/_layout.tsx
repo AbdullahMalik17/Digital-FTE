@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, CheckSquare, MessageSquare, Settings, Calendar } from 'lucide-react-native';
+import { Home, CheckSquare, MessageSquare, Settings, Calendar, Zap } from 'lucide-react-native';
 import { TabBar } from '../../components/ui/TabBar';
 
 export default function TabLayout() {
@@ -36,6 +36,13 @@ export default function TabLayout() {
         options={{
           title: 'Calendar',
           tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="integrations"
+        options={{
+          title: 'Channels',
+          tabBarIcon: ({ color }) => <Zap size={24} color={color} />,
         }}
       />
       <Tabs.Screen
