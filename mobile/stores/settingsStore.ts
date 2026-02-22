@@ -10,8 +10,16 @@ interface SettingsState {
     suggestions: boolean;
     digest: boolean;
   };
+  openai: {
+    enabled: boolean;
+    apiKey: string;
+    model: string;
+    systemPrompt: string;
+    temperature: number;
+  };
   setTheme: (theme: 'dark' | 'light' | 'system') => void;
   setApiBaseUrl: (url: string) => void;
+  setOpenAIConfig: (config: Partial<SettingsState['openai']>) => void;
   toggleNotification: (key: 'approvals' | 'suggestions' | 'digest') => void;
 }
 
@@ -25,8 +33,19 @@ export const useSettingsStore = create<SettingsState>()(
         suggestions: true,
         digest: true,
       },
+      openai: {
+        enabled: true,
+        apiKey: '',
+        model: 'gpt-4o',
+        systemPrompt: 'You are Abdullah Junior, an AI Chief of Staff. You help the user manage their professional and personal life.',
+        temperature: 0.7,
+      },
       setTheme: (theme) => set({ theme }),
       setApiBaseUrl: (url) => set({ apiBaseUrl: url }),
+      setOpenAIConfig: (config) =>
+        set((state) => ({
+          openai: { ...state.openai, ...config },
+        })),
       toggleNotification: (key) =>
         set((state) => ({
           notifications: {

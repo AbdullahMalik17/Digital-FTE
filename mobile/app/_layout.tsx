@@ -25,6 +25,7 @@ function AppContent() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="skills" options={{ title: 'Agent Skills', headerShown: true, headerBackTitle: 'Back' }} />
+          <Stack.Screen name="agent-config" options={{ title: 'OpenAI Configuration', headerShown: true, headerBackTitle: 'Back' }} />
         </Stack>
         <OfflineBanner />
         <StatusBar style="light" />

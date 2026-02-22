@@ -43,11 +43,22 @@ export default function SettingsScreen() {
           <SettingsCard>
             <TouchableOpacity
               onPress={() => router.push('/skills')}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <Brain size={20} color="#3b82f6" />
                 <Text style={{ color: '#e2e8f0', fontSize: 15 }}>Agent Skills</Text>
+              </View>
+              <ChevronRight size={18} color="#64748b" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push('/agent-config')}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Zap size={20} color="#f59e0b" />
+                <Text style={{ color: '#e2e8f0', fontSize: 15 }}>OpenAI Configuration</Text>
               </View>
               <ChevronRight size={18} color="#64748b" />
             </TouchableOpacity>

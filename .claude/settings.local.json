@@ -44,7 +44,19 @@
       "Bash(sudo apt-get install:*)",
       "Bash(sh:*)",
       "Bash(/home/abdullah/.fly/bin/flyctl auth whoami:*)",
-      "WebFetch(domain:openclaw.ai)"
+      "WebFetch(domain:openclaw.ai)",
+      "Bash(cat:*)",
+      "Bash(echo expo not found globally:*)",
+      "Bash(tail:*)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && npx eas whoami 2>&1)",
+      "Bash(pkill:*)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && npx eas update --branch preview --message \"feat: add Channels tab with 9 integrations + mobile UI updates\" --non-interactive 2>&1)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && npx eas build:list --platform android --limit 5 --non-interactive 2>&1)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(echo === TAB SCREENS SUMMARY ===:*)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && node -e \"\nconst fs = require\\('fs'\\);\nconst content = fs.readFileSync\\('components/ui/TabBar.tsx', 'utf8'\\);\n// Check imports exist\nconst checks = ['expo-blur', 'react-native-reanimated', 'expo-haptics'];\nchecks.forEach\\(pkg => {\n  const exists = fs.existsSync\\('node_modules/' + pkg\\);\n  console.log\\(pkg + ': ' + \\(exists ? 'OK' : 'MISSING'\\)\\);\n}\\);\n\" 2>&1)",
+      "Bash(cd:*)"
     ]
   }
 }

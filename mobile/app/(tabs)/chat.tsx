@@ -20,6 +20,7 @@ interface Message {
 
 export default function ChatScreen() {
   const { showToast } = useToast();
+  const settings = useSettingsStore();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -29,28 +30,8 @@ export default function ChatScreen() {
       suggestions: ['Check status', 'Pending approvals', 'Help'],
     },
   ]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([
-    'Check status',
-    'Pending approvals',
-    'What\'s urgent?',
-    'Help',
-  ]);
-  const [isConnected, setIsConnected] = useState(true);
-  const flatListRef = useRef<FlatList>(null);
 
-  useEffect(() => {
-    checkConnection();
-  }, []);
-
-  const checkConnection = async () => {
-    try {
-      await apiService.health();
-      setIsConnected(true);
-    } catch {
-      setIsConnected(false);
-    }
-  };
+  // ... (rest of state)
 
   const handleSend = async (text: string) => {
     const userMsg: Message = {
@@ -64,7 +45,20 @@ export default function ChatScreen() {
     setIsTyping(true);
 
     try {
-      const response = await apiService.sendChatMessage(text);
+      // Pass OpenAI config in context if enabled
+      const context = settings.openai.enabled ? {
+        openai_config: {
+          model: settings.openai.model,
+          system_prompt: settings.openai.systemPrompt,
+          temperature: settings.openai.temperature,
+          // We don't send the API key here for security unless specifically requested, 
+          // but we could if the backend is set up to receive it.
+          // For now, let's assume the backend has its own key or we'll send it if non-empty.
+          ...(settings.openai.apiKey ? { api_key: settings.openai.apiKey } : {})
+        }
+      } : {};
+
+      const response = await apiService.sendChatMessage(text, context);
 
       const agentMsg: Message = {
         id: (Date.now() + 1).toString(),
