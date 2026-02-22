@@ -22,7 +22,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="relative space-y-12 pb-24">
+    <div className="relative space-y-7 pb-16">
       {/* Ambient Background Orbs */}
       <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[100px] -z-10 pointer-events-none" />
       <div className="absolute -top-20 right-0 w-[400px] h-[400px] bg-violet-500/6 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -30,7 +30,7 @@ export default async function Home() {
 
       {/* ── Hero Section ── */}
       <div className="animate-fade-in relative">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 glass-card border-primary/10 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 glass-card border-primary/10 relative overflow-hidden">
           {/* Shimmer top border */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           {/* Subtle bottom glow */}
@@ -51,7 +51,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-none">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
               Good {getGreeting()},{' '}
               <span className="gradient-text">Abdullah</span>
             </h1>
@@ -88,7 +88,7 @@ export default async function Home() {
       </div>
 
       {/* ── Stats Row ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Pending Tasks"    value={pending.length}   icon="📋" trend="+2 since 9 AM"       color="blue"    delay={1} />
         <StatCard label="Intelligence Ops" value={12}               icon="🧠" trend="84% efficiency"      color="purple"  delay={2} />
         <StatCard label="Completed Today"  value={completed.length} icon="✨" trend="Top 5% productivity" color="green"   delay={3} />
@@ -116,9 +116,9 @@ export default async function Home() {
       <GradientDivider />
 
       {/* ── Main Grid: Chat + Follow-ups | Task Board ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left column */}
-        <div className="space-y-8">
+        <div className="space-y-5">
           <div className="animate-fade-in-delay-3">
             <SectionHeader
               accent="bg-primary"
@@ -140,9 +140,9 @@ export default async function Home() {
 
         {/* Right: Task Board (wider) */}
         <div className="lg:col-span-2 animate-fade-in-delay-3">
-          <div className="glass-card p-8 border-primary/10 shadow-2xl shadow-primary/5 relative overflow-hidden">
+          <div className="glass-card p-5 border-primary/10 shadow-2xl shadow-primary/5 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-5">
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="w-2 h-7 bg-gradient-to-b from-primary to-violet-500 rounded-full" />
@@ -169,7 +169,7 @@ export default async function Home() {
 
       {/* ── Connected Channels ── */}
       <div className="animate-fade-in-delay-4">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
               <span className="w-2 h-7 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full" />
@@ -272,13 +272,13 @@ function StatCard({
   const c = palette[color] ?? palette.blue
 
   return (
-    <div className={`animate-fade-in-delay-${delay} group relative overflow-hidden rounded-2xl border ${c.border} bg-gradient-to-br ${c.bg} p-6 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}>
+    <div className={`animate-fade-in-delay-${delay} group relative overflow-hidden rounded-2xl border ${c.border} bg-gradient-to-br ${c.bg} p-4 backdrop-blur-xl shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}>
       {/* Top shimmer */}
       <div className={`absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-current to-transparent ${c.text} opacity-40`} />
       {/* Left accent bar */}
       <div className={`absolute left-0 top-4 bottom-4 w-[3px] bg-gradient-to-b ${c.accent} rounded-r-full opacity-60`} />
 
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3">
         <div className={`p-2.5 rounded-xl bg-gradient-to-br ${c.bg} border ${c.border} text-2xl group-hover:scale-110 transition-transform duration-200 shadow-inner`}>
           {icon}
         </div>
@@ -294,7 +294,7 @@ function StatCard({
       <div className="text-sm font-semibold text-muted-foreground mt-1">{label}</div>
 
       {/* Sparkline bars */}
-      <div className="mt-4 flex items-end gap-0.5 h-6 opacity-30 group-hover:opacity-60 transition-opacity duration-300">
+      <div className="mt-3 flex items-end gap-0.5 h-5 opacity-30 group-hover:opacity-60 transition-opacity duration-300">
         {[30, 50, 40, 70, 55, 80, 65].map((h, i) => (
           <div key={i} className={`flex-1 ${c.bar} rounded-t-sm`} style={{ height: `${h}%` }} />
         ))}
@@ -314,7 +314,7 @@ function SkillCard({
       ${isSoon
         ? 'border-white/5 bg-white/[0.01] opacity-40'
         : 'border-white/10 bg-white/[0.03] hover:border-primary/30 hover:bg-primary/5 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10'
-      } p-4 flex flex-col items-center gap-3 text-center backdrop-blur-md`}
+      } p-3 flex flex-col items-center gap-2 text-center backdrop-blur-md`}
     >
       {!isSoon && (
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ['latin'] })
 // Dynamic import for client component with SSR disabled
 const Sidebar = dynamic(() => import('@/components/Sidebar'), { 
   ssr: false,
-  loading: () => <div className="hidden md:flex md:w-64" /> 
+  loading: () => null
 })
 
 export const metadata: Metadata = {
@@ -73,8 +73,8 @@ export default function RootLayout({
               <Sidebar />
 
               {/* Main content area */}
-              <main className="flex-1 overflow-auto min-w-0">
-                <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
+              <main className="flex-1 overflow-auto md:ml-72 min-w-0">
+                <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
                   {children}
                 </div>
               </main>

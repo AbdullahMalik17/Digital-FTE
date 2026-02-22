@@ -46,7 +46,7 @@ export default function Sidebar() {
 
         <div className="relative flex flex-col flex-1 overflow-y-auto scrollbar-hide">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-6 border-b border-white/[0.05]">
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.05]">
             <div className="relative">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-primary/30">
                 <span className="text-white font-black text-lg tracking-tighter">AJ</span>
@@ -71,7 +71,7 @@ export default function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-5 space-y-6">
+          <nav className="flex-1 px-3 py-3 space-y-4">
             <div className="space-y-0.5">
               <p className="px-3 text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] mb-3">
                 Operations
@@ -190,7 +190,7 @@ export default function Sidebar() {
           </div>
 
           {/* Footer */}
-          <div className="px-4 pb-5 border-t border-white/[0.05] pt-3">
+          <div className="px-4 pb-4 border-t border-white/[0.05] pt-3">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-1.5">
@@ -237,8 +237,6 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Spacer for sidebar on desktop */}
-      <div className="hidden md:block md:w-72 flex-shrink-0" />
     </>
   )
 }
