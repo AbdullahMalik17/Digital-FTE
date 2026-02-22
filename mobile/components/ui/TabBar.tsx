@@ -19,18 +19,23 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       alignItems: 'center',
     }}>
       <BlurView
-        intensity={Platform.OS === 'ios' ? 80 : 0}
+        intensity={Platform.OS === 'ios' ? 90 : 0}
         tint="dark"
         style={{
           width: '100%',
           flexDirection: 'row',
-          borderRadius: 24,
+          borderRadius: 28,
           overflow: 'hidden',
-          backgroundColor: Platform.OS === 'android' ? 'rgba(15,23,42,0.92)' : 'transparent',
+          backgroundColor: Platform.OS === 'android' ? 'rgba(8,14,30,0.96)' : 'transparent',
           borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.1)',
-          paddingHorizontal: 4,
-          paddingVertical: 6,
+          borderColor: 'rgba(255,255,255,0.08)',
+          paddingHorizontal: 6,
+          paddingVertical: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.5,
+          shadowRadius: 20,
+          elevation: 20,
         }}
       >
         {state.routes.map((route, index) => {
@@ -103,33 +108,41 @@ function TabItem({ isFocused, options, onPress, onLongPress }: {
       accessibilityLabel={label}
     >
       <Animated.View style={[{ alignItems: 'center', gap: 3 }, animatedStyle]}>
-        {/* Active pill background */}
+        {/* Active pill background with glow */}
         {isFocused && (
           <View style={{
             position: 'absolute',
-            top: -6,
-            bottom: -6,
-            left: -12,
-            right: -12,
-            backgroundColor: 'rgba(96,165,250,0.15)',
-            borderRadius: 16,
+            top: -8,
+            bottom: -8,
+            left: -14,
+            right: -14,
+            backgroundColor: 'rgba(59,130,246,0.12)',
+            borderRadius: 18,
             borderWidth: 1,
-            borderColor: 'rgba(96,165,250,0.25)',
+            borderColor: 'rgba(96,165,250,0.22)',
           }} />
         )}
 
-        {/* Icon */}
-        <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
-          {Icon && <Icon color={isFocused ? '#60A5FA' : '#64748b'} size={22} />}
+        {/* Icon with glow dot */}
+        <View style={{ width: 26, height: 26, alignItems: 'center', justifyContent: 'center' }}>
+          {Icon && <Icon color={isFocused ? '#60A5FA' : '#475569'} size={21} />}
+          {isFocused && (
+            <View style={{
+              position: 'absolute', bottom: -4,
+              width: 4, height: 4, borderRadius: 2,
+              backgroundColor: '#60a5fa',
+            }} />
+          )}
         </View>
 
         {/* Label */}
         <Text style={{
           fontSize: 9,
-          fontWeight: isFocused ? '700' : '500',
-          color: isFocused ? '#60A5FA' : '#64748b',
-          letterSpacing: 0.3,
+          fontWeight: isFocused ? '800' : '500',
+          color: isFocused ? '#60A5FA' : '#475569',
+          letterSpacing: 0.5,
           textTransform: 'uppercase',
+          marginTop: 2,
         }}>
           {label}
         </Text>

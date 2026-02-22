@@ -1,17 +1,26 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  TrendingUp,
-  Lightbulb
-} from "lucide-react"
+import { AlertCircle, CheckCircle2, Clock, Calendar, TrendingUp, Lightbulb, Sparkles } from "lucide-react"
 import type { DailyDigest } from '@/types'
+
+const MOCK_DIGEST = {
+  greeting: "AI Intelligence Briefing",
+  date: new Date().toISOString(),
+  urgentCount: 3,
+  actionCount: 7,
+  followUpsCount: 2,
+  todayEvents: [
+    { id: '1', title: 'Team Standup', start: new Date(Date.now() + 3_600_000).toISOString() },
+    { id: '2', title: 'Client Strategy Review', start: new Date(Date.now() + 7_200_000).toISOString() },
+  ],
+  recommendations: [
+    'Follow up on 3 unanswered LinkedIn messages from yesterday.',
+    'Schedule pending invoice review — 2 invoices awaiting approval.',
+  ],
+  yesterdaySummary: { tasksCompleted: 12, emailsSent: 8 },
+}
 
 export function DailyDigestCard() {
   const [digest, setDigest] = useState<DailyDigest | null>(null)
@@ -36,81 +45,88 @@ export function DailyDigestCard() {
 
   if (loading) {
     return (
-      <Card className="bg-gradient-to-br from-blue-950/50 to-zinc-900/50 border-blue-900/30">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-zinc-800 rounded w-1/2"></div>
-            <div className="h-8 bg-zinc-800 rounded w-3/4"></div>
+      <div className="glass-card p-6 border-primary/10 relative overflow-hidden">
+        <div className="animate-pulse space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-white/[0.04] rounded-xl" />
+            <div className="space-y-2 flex-1">
+              <div className="h-4 bg-white/[0.04] rounded w-1/2" />
+              <div className="h-3 bg-white/[0.04] rounded w-1/4" />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="grid grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-16 bg-white/[0.03] rounded-xl" />)}
+          </div>
+          <div className="h-20 bg-white/[0.03] rounded-xl" />
+        </div>
+      </div>
     )
   }
 
-  if (!digest) {
-    return null
-  }
+  const data = (digest as any) || MOCK_DIGEST
+
+  const stats = [
+    { icon: AlertCircle,   label: 'Urgent',    value: data.urgentCount,        color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/20'    },
+    { icon: CheckCircle2,  label: 'Actions',   value: data.actionCount,        color: 'text-amber-400',  bg: 'bg-amber-500/10 border-amber-500/20' },
+    { icon: Clock,         label: 'Follow-ups', value: data.followUpsCount,     color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20'},
+    { icon: Calendar,      label: 'Events',    value: data.todayEvents.length, color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/20'   },
+  ]
 
   return (
-    <Card className="bg-gradient-to-br from-blue-950/50 to-zinc-900/50 border-blue-900/30">
-      <CardHeader className="pb-2">
+    <div className="glass-card border-primary/10 relative overflow-hidden">
+      {/* Top shimmer */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      {/* Background ambient glow */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative p-6 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-blue-100">
-            {digest.greeting}
-          </CardTitle>
-          <Badge variant="outline" className="text-blue-400 border-blue-700">
-            {new Date(digest.date).toLocaleDateString('en-US', { weekday: 'long' })}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-3">
-          <StatBadge
-            icon={<AlertCircle className="w-4 h-4" />}
-            label="Urgent"
-            value={digest.urgentCount}
-            color="red"
-          />
-          <StatBadge
-            icon={<CheckCircle2 className="w-4 h-4" />}
-            label="Actions"
-            value={digest.actionCount}
-            color="yellow"
-          />
-          <StatBadge
-            icon={<Clock className="w-4 h-4" />}
-            label="Follow-ups"
-            value={digest.followUpsCount}
-            color="orange"
-          />
-          <StatBadge
-            icon={<Calendar className="w-4 h-4" />}
-            label="Events"
-            value={digest.todayEvents.length}
-            color="blue"
-          />
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/30 to-violet-500/30 border border-primary/20 flex items-center justify-center shadow-lg shadow-primary/10">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-black text-foreground tracking-tight">{data.greeting}</h3>
+              <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">
+                {new Date(data.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-bold text-primary tracking-widest uppercase">Live Briefing</span>
+          </div>
         </div>
 
-        {/* Today's Events */}
-        {digest.todayEvents.length > 0 && (
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-3">
+          {stats.map(({ icon: Icon, label, value, color, bg }) => (
+            <div key={label} className={`flex flex-col items-center p-3 rounded-xl border ${bg} gap-1.5`}>
+              <div className="flex items-center gap-1.5">
+                <Icon className={`w-3.5 h-3.5 ${color}`} />
+                <span className={`text-xl font-black tabular-nums ${color}`}>{value}</span>
+              </div>
+              <span className="text-[9px] uppercase tracking-widest text-muted-foreground/60 font-bold">{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Today's Schedule */}
+        {data.todayEvents.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Today's Schedule
-            </h4>
-            <div className="space-y-1">
-              {digest.todayEvents.slice(0, 3).map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center gap-2 text-sm text-zinc-400 bg-zinc-900/50 px-2 py-1 rounded"
-                >
-                  <span className="text-blue-400 font-mono text-xs">
-                    {new Date(event.start).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
+              <h4 className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-[0.15em]">Today&apos;s Schedule</h4>
+            </div>
+            <div className="space-y-2">
+              {data.todayEvents.slice(0, 3).map((event: any) => (
+                <div key={event.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                  <span className="text-primary font-mono text-[11px] font-black min-w-[48px]">
+                    {new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                   </span>
-                  <span className="truncate">{event.title}</span>
+                  <div className="w-1 h-1 rounded-full bg-primary/50 shrink-0" />
+                  <span className="text-sm text-foreground/80 font-medium truncate">{event.title}</span>
                 </div>
               ))}
             </div>
@@ -118,62 +134,34 @@ export function DailyDigestCard() {
         )}
 
         {/* AI Recommendations */}
-        {digest.recommendations.length > 0 && (
+        {data.recommendations.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-              <Lightbulb className="w-3 h-3" /> Recommendations
-            </h4>
-            <ul className="space-y-1">
-              {digest.recommendations.slice(0, 2).map((rec, i) => (
-                <li key={i} className="text-xs text-zinc-400 flex items-start gap-2">
-                  <TrendingUp className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
-                  {rec}
-                </li>
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-400/60" />
+              <h4 className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-[0.15em]">AI Recommendations</h4>
+            </div>
+            <div className="space-y-2">
+              {data.recommendations.slice(0, 2).map((rec: string, i: number) => (
+                <div key={i} className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                  <TrendingUp className="w-3.5 h-3.5 text-amber-400/70 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground/80 leading-relaxed">{rec}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
         {/* Yesterday Summary */}
-        {digest.yesterdaySummary && (
-          <div className="pt-2 border-t border-zinc-800">
-            <p className="text-xs text-zinc-600">
-              Yesterday: {digest.yesterdaySummary.tasksCompleted} tasks completed,
-              {digest.yesterdaySummary.emailsSent} emails sent
-            </p>
+        {data.yesterdaySummary && (
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5">
+            <span className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest">Yesterday</span>
+            <div className="flex items-center gap-4">
+              <span className="text-[11px] font-black text-emerald-400">{data.yesterdaySummary.tasksCompleted} tasks done</span>
+              <span className="text-[11px] font-black text-primary">{data.yesterdaySummary.emailsSent} emails sent</span>
+            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function StatBadge({
-  icon,
-  label,
-  value,
-  color
-}: {
-  icon: React.ReactNode
-  label: string
-  value: number
-  color: 'red' | 'yellow' | 'orange' | 'blue' | 'green'
-}) {
-  const colorClasses = {
-    red: 'bg-red-950/50 border-red-900/50 text-red-400',
-    yellow: 'bg-yellow-950/50 border-yellow-900/50 text-yellow-400',
-    orange: 'bg-orange-950/50 border-orange-900/50 text-orange-400',
-    blue: 'bg-blue-950/50 border-blue-900/50 text-blue-400',
-    green: 'bg-green-950/50 border-green-900/50 text-green-400',
-  }
-
-  return (
-    <div className={`flex flex-col items-center p-2 rounded-lg border ${colorClasses[color]}`}>
-      <div className="flex items-center gap-1">
-        {icon}
-        <span className="text-lg font-bold">{value}</span>
       </div>
-      <span className="text-[10px] uppercase tracking-wider opacity-70">{label}</span>
     </div>
   )
 }

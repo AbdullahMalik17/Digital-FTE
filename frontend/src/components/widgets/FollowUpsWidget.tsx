@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, Mail, AlertTriangle, CheckCircle, X, Bell } from "lucide-react"
 import type { FollowUp } from '@/types'
@@ -34,9 +32,8 @@ export function FollowUpsWidget() {
       await fetch(`/api/follow-ups/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action }),
       })
-      // Refresh the list
       fetchFollowUps()
     } catch (error) {
       console.error('Failed to update follow-up:', error)
@@ -45,144 +42,155 @@ export function FollowUpsWidget() {
 
   if (loading) {
     return (
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-zinc-800 rounded w-1/3"></div>
-            <div className="h-16 bg-zinc-800 rounded"></div>
+      <div className="glass-card p-6 border-amber-500/10 relative overflow-hidden">
+        <div className="animate-pulse space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/[0.04] rounded-xl" />
+            <div className="h-4 bg-white/[0.04] rounded w-1/3" />
           </div>
-        </CardContent>
-      </Card>
+          {[1, 2].map((i) => <div key={i} className="h-16 bg-white/[0.03] rounded-xl" />)}
+        </div>
+      </div>
     )
   }
 
-  const pendingFollowUps = followUps.filter(f => f.status === 'pending')
-  const overdueFollowUps = pendingFollowUps.filter(f => f.daysSince > 3)
-
-  if (pendingFollowUps.length === 0) {
-    return (
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            Follow-up Reminders
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-6 text-zinc-600 text-sm">
-            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
-            All caught up! No pending follow-ups.
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  const pendingFollowUps = followUps.filter((f) => f.status === 'pending')
+  const overdueCount     = pendingFollowUps.filter((f) => f.daysSince > 3).length
 
   return (
-    <Card className="bg-zinc-900/50 border-zinc-800">
-      <CardHeader className="pb-2">
+    <div className="glass-card border-amber-500/10 relative overflow-hidden">
+      {/* Top shimmer */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+
+      <div className="p-5 space-y-4">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            Follow-up Reminders
-          </CardTitle>
-          <div className="flex gap-2">
-            {overdueFollowUps.length > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                {overdueFollowUps.length} Overdue
-              </Badge>
-            )}
-            <Badge variant="outline" className="text-xs text-zinc-500">
-              {pendingFollowUps.length} Pending
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {pendingFollowUps.slice(0, 5).map((followUp) => (
-          <div
-            key={followUp.id}
-            className={`p-3 rounded-lg border transition-colors ${
-              followUp.daysSince > 3
-                ? 'bg-red-950/20 border-red-900/30'
-                : followUp.daysSince > 1
-                ? 'bg-yellow-950/20 border-yellow-900/30'
-                : 'bg-zinc-800/50 border-zinc-700/50'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <Mail className="w-3 h-3 text-zinc-500" />
-                  <span className="text-sm font-medium text-zinc-300 truncate">
-                    {followUp.contact}
-                  </span>
-                  {followUp.daysSince > 3 && (
-                    <AlertTriangle className="w-3 h-3 text-red-500" />
-                  )}
-                </div>
-                <p className="text-xs text-zinc-500 truncate">{followUp.subject}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock className="w-3 h-3 text-zinc-600" />
-                  <span className="text-xs text-zinc-600">
-                    {followUp.daysSince === 0
-                      ? 'Sent today'
-                      : followUp.daysSince === 1
-                      ? 'Sent yesterday'
-                      : `${followUp.daysSince} days ago`}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] ${
-                      followUp.priority === 'high'
-                        ? 'text-red-400 border-red-800'
-                        : followUp.priority === 'medium'
-                        ? 'text-yellow-400 border-yellow-800'
-                        : 'text-zinc-500 border-zinc-700'
-                    }`}
-                  >
-                    {followUp.priority}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0 text-zinc-500 hover:text-green-400"
-                  onClick={() => handleAction(followUp.id, 'resolve')}
-                  title="Mark as resolved"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0 text-zinc-500 hover:text-yellow-400"
-                  onClick={() => handleAction(followUp.id, 'snooze')}
-                  title="Snooze 2 days"
-                >
-                  <Clock className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400"
-                  onClick={() => handleAction(followUp.id, 'dismiss')}
-                  title="Dismiss"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Bell className="w-4 h-4 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="font-black text-foreground tracking-tight text-sm">Follow-up Reminders</h3>
+              <p className="text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest">
+                {pendingFollowUps.length} pending
+              </p>
             </div>
           </div>
-        ))}
-        {pendingFollowUps.length > 5 && (
-          <p className="text-xs text-center text-zinc-600">
-            +{pendingFollowUps.length - 5} more follow-ups
-          </p>
+          <div className="flex items-center gap-2">
+            {overdueCount > 0 && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20">
+                <AlertTriangle className="w-3 h-3 text-red-400" />
+                <span className="text-[10px] font-bold text-red-400">{overdueCount} Overdue</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Empty state */}
+        {pendingFollowUps.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-foreground/70">All caught up!</p>
+              <p className="text-xs text-muted-foreground/50 mt-0.5">No pending follow-ups.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {pendingFollowUps.slice(0, 5).map((followUp) => {
+              const isOverdue = followUp.daysSince > 3
+              const isWarning = followUp.daysSince > 1
+
+              return (
+                <div
+                  key={followUp.id}
+                  className={`relative overflow-hidden rounded-xl border transition-all duration-200 p-3 group ${
+                    isOverdue
+                      ? 'bg-red-500/5 border-red-500/20 hover:border-red-500/30'
+                      : isWarning
+                        ? 'bg-amber-500/5 border-amber-500/15 hover:border-amber-500/25'
+                        : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                  }`}
+                >
+                  {/* Left priority strip */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-white/10'}`} />
+
+                  <div className="flex items-start justify-between gap-2 pl-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Mail className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                        <span className="text-sm font-bold text-foreground/90 truncate">{followUp.contact}</span>
+                        {isOverdue && <AlertTriangle className="w-3 h-3 text-red-400 shrink-0" />}
+                      </div>
+                      <p className="text-xs text-muted-foreground/60 truncate mb-1">{followUp.subject}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-muted-foreground/40" />
+                          <span className="text-[10px] text-muted-foreground/50 font-medium">
+                            {followUp.daysSince === 0
+                              ? 'Today'
+                              : followUp.daysSince === 1
+                                ? 'Yesterday'
+                                : `${followUp.daysSince}d ago`}
+                          </span>
+                        </div>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                          followUp.priority === 'high'
+                            ? 'text-red-400 border-red-500/20 bg-red-500/5'
+                            : followUp.priority === 'medium'
+                              ? 'text-amber-400 border-amber-500/20 bg-amber-500/5'
+                              : 'text-muted-foreground/50 border-white/5'
+                        }`}>
+                          {followUp.priority}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-emerald-500/10 hover:text-emerald-400 rounded-lg"
+                        onClick={() => handleAction(followUp.id, 'resolve')}
+                        title="Resolve"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-amber-500/10 hover:text-amber-400 rounded-lg"
+                        onClick={() => handleAction(followUp.id, 'snooze')}
+                        title="Snooze 2 days"
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-red-500/10 hover:text-red-400 rounded-lg"
+                        onClick={() => handleAction(followUp.id, 'dismiss')}
+                        title="Dismiss"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+
+            {pendingFollowUps.length > 5 && (
+              <p className="text-center text-xs text-muted-foreground/40 font-bold uppercase tracking-widest pt-1">
+                +{pendingFollowUps.length - 5} more follow-ups
+              </p>
+            )}
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

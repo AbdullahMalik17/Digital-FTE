@@ -73,8 +73,8 @@ export default function RootLayout({
               <Sidebar />
 
               {/* Main content area */}
-              <main className="flex-1 overflow-auto">
-                <div className="p-6 md:p-8 max-w-[1400px]">
+              <main className="flex-1 overflow-auto md:pl-72">
+                <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
                   {children}
                 </div>
               </main>

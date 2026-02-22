@@ -23,11 +23,14 @@ const nextConfig = {
   },
 
   // API configuration
+  // Frontend uses its own Python backend (localhost:8000 by default).
+  // The mobile app separately connects directly to https://abdullah-junior-api.fly.dev.
   async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
     return [
       {
         source: '/api/:path*',
-        destination: 'https://abdullah-junior-api.fly.dev/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },

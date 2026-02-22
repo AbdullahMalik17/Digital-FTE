@@ -1,78 +1,52 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, FileText, Zap, BarChart3, PlusCircle } from 'lucide-react';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+
+const NAV_ITEMS = [
+  { name: 'Home',      href: '/',          emoji: '🏠', badge: null },
+  { name: 'Tasks',     href: '/tasks',     emoji: '✅', badge: '12' },
+  { name: 'Skills',    href: '/skills',    emoji: '⚡', badge: null },
+  { name: 'Analytics', href: '/analytics', emoji: '📊', badge: null },
+  { name: 'Setup',     href: '/setup',     emoji: '⚙️', badge: null },
+]
 
 export default function MobileNav() {
-  const pathname = usePathname();
-
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
-  };
+  const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t z-40 pb-safe">
-      <div className="flex items-center justify-around py-2">
-        <Link
-          href="/"
-          className={`flex flex-col items-center p-2 text-xs transition-colors ${
-            isActive('/') && !pathname.includes('view=')
-              ? 'text-blue-500'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Home className="w-5 h-5 mb-1" />
-          <span>Home</span>
-        </Link>
-
-        <Link
-          href="/?view=drafts"
-          className={`flex flex-col items-center p-2 text-xs transition-colors ${
-            pathname.includes('view=drafts')
-              ? 'text-blue-500'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <FileText className="w-5 h-5 mb-1" />
-          <span>Drafts</span>
-        </Link>
-
-        <Link
-          href="/?view=command"
-          className="flex flex-col items-center p-2 text-xs text-muted-foreground hover:text-foreground transition-colors relative"
-        >
-          <div className="absolute -top-4 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <PlusCircle className="w-6 h-6 text-white" />
-          </div>
-          <span className="mt-5">Command</span>
-        </Link>
-
-        <Link
-          href="/skills"
-          className={`flex flex-col items-center p-2 text-xs transition-colors ${
-            isActive('/skills')
-              ? 'text-blue-500'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Zap className="w-5 h-5 mb-1" />
-          <span>Skills</span>
-        </Link>
-
-        <Link
-          href="/?view=status"
-          className={`flex flex-col items-center p-2 text-xs transition-colors ${
-            pathname.includes('view=status')
-              ? 'text-blue-500'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <BarChart3 className="w-5 h-5 mb-1" />
-          <span>Status</span>
-        </Link>
+    <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+      <div className="glass-card bg-background/80 backdrop-blur-2xl border-white/10 shadow-2xl px-2 py-2 rounded-[2rem] flex items-center justify-around">
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                'relative flex flex-col items-center gap-1 px-4 py-1.5 rounded-2xl transition-all duration-200 active:scale-90',
+                isActive ? 'bg-primary/15' : 'opacity-50'
+              )}
+            >
+              <span className={cn('text-xl transition-transform', isActive ? 'scale-110' : 'scale-100')}>
+                {item.emoji}
+              </span>
+              <span className={cn(
+                'text-[9px] font-black uppercase tracking-tighter transition-colors',
+                isActive ? 'text-primary' : 'text-muted-foreground/40'
+              )}>
+                {item.name}
+              </span>
+              {item.badge && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-amber-500 rounded-full text-[9px] font-black text-white flex items-center justify-center">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          )
+        })}
       </div>
     </nav>
-  );
+  )
 }

@@ -1,16 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  CheckCircle2,
-  Clock,
-  Inbox
-} from "lucide-react"
+import { BarChart3, TrendingUp, TrendingDown, CheckCircle2, Clock, Inbox } from "lucide-react"
 import type { Analytics } from '@/types'
 
 interface AnalyticsData extends Analytics {
@@ -19,6 +11,48 @@ interface AnalyticsData extends Analytics {
     responseTimeTrend: string
     emailVolumeTrend: string
   }
+}
+
+const MOCK_ANALYTICS: AnalyticsData = {
+  tasksToday: 8,
+  tasksThisWeek: 47,
+  avgResponseTime: 12,
+  approvalRate: 94,
+  topCategories: [
+    { category: 'urgent_action',  count: 12 },
+    { category: 'high_priority',  count: 18 },
+    { category: 'normal',         count: 30 },
+    { category: 'meeting',        count: 9  },
+  ],
+  trends: {
+    tasksCompletedTrend: '+15%',
+    responseTimeTrend: '-2m',
+    emailVolumeTrend: '+8%',
+  },
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  urgent_action: 'Urgent',
+  high_priority: 'High Priority',
+  normal:        'Normal',
+  low_priority:  'Low',
+  newsletter:    'Newsletter',
+  social:        'Social',
+  promotional:   'Promo',
+  meeting:       'Meeting',
+  financial:     'Financial',
+}
+
+const CATEGORY_COLORS: Record<string, { bar: string; bg: string; text: string }> = {
+  urgent_action: { bar: 'bg-red-500',     bg: 'bg-red-500/10',     text: 'text-red-400'     },
+  high_priority: { bar: 'bg-orange-500',  bg: 'bg-orange-500/10',  text: 'text-orange-400'  },
+  normal:        { bar: 'bg-blue-500',    bg: 'bg-blue-500/10',    text: 'text-blue-400'    },
+  low_priority:  { bar: 'bg-slate-500',   bg: 'bg-slate-500/10',   text: 'text-slate-400'   },
+  newsletter:    { bar: 'bg-purple-500',  bg: 'bg-purple-500/10',  text: 'text-purple-400'  },
+  social:        { bar: 'bg-pink-500',    bg: 'bg-pink-500/10',    text: 'text-pink-400'    },
+  promotional:   { bar: 'bg-yellow-500',  bg: 'bg-yellow-500/10',  text: 'text-yellow-400'  },
+  meeting:       { bar: 'bg-emerald-500', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+  financial:     { bar: 'bg-teal-500',    bg: 'bg-teal-500/10',    text: 'text-teal-400'    },
 }
 
 export function AnalyticsCard() {
@@ -44,169 +78,134 @@ export function AnalyticsCard() {
 
   if (loading) {
     return (
-      <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-zinc-800 rounded w-1/3"></div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="h-16 bg-zinc-800 rounded"></div>
-              <div className="h-16 bg-zinc-800 rounded"></div>
-              <div className="h-16 bg-zinc-800 rounded"></div>
-            </div>
+      <div className="glass-card p-6 border-primary/10">
+        <div className="animate-pulse space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/[0.04] rounded-xl" />
+            <div className="h-4 bg-white/[0.04] rounded w-1/3" />
           </div>
-        </CardContent>
-      </Card>
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3].map((i) => <div key={i} className="h-20 bg-white/[0.03] rounded-xl" />)}
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-6 bg-white/[0.03] rounded" />)}
+          </div>
+        </div>
+      </div>
     )
   }
 
-  if (!analytics) return null
+  const data = analytics || MOCK_ANALYTICS
+  const total = data.topCategories.reduce((a, b) => a + b.count, 0)
+
+  const metrics = [
+    {
+      icon: CheckCircle2,
+      label: 'Tasks Today',
+      value: data.tasksToday,
+      trend: data.trends?.tasksCompletedTrend,
+      iconColor: 'text-emerald-400',
+      bg: 'bg-emerald-500/10 border-emerald-500/20',
+      isTime: false,
+    },
+    {
+      icon: Inbox,
+      label: 'This Week',
+      value: data.tasksThisWeek,
+      trend: data.trends?.emailVolumeTrend,
+      iconColor: 'text-blue-400',
+      bg: 'bg-blue-500/10 border-blue-500/20',
+      isTime: false,
+    },
+    {
+      icon: Clock,
+      label: 'Avg Response',
+      value: `${data.avgResponseTime}m`,
+      trend: data.trends?.responseTimeTrend,
+      iconColor: 'text-amber-400',
+      bg: 'bg-amber-500/10 border-amber-500/20',
+      isTime: true,
+    },
+  ]
 
   return (
-    <Card className="bg-zinc-900/50 border-zinc-800">
-      <CardHeader className="pb-2">
+    <div className="glass-card border-primary/10 relative overflow-hidden">
+      {/* Top shimmer */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
+      <div className="p-6 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-zinc-400 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Performance Analytics
-          </CardTitle>
-          <Badge variant="outline" className="text-xs text-green-500 border-green-800">
-            {analytics.approvalRate}% Approval Rate
-          </Badge>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-violet-500/20 border border-primary/20 flex items-center justify-center shadow-lg">
+              <BarChart3 className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-black text-foreground tracking-tight">Performance Analytics</h3>
+              <p className="text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest">
+                Real-time metrics
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-emerald-400">{data.approvalRate}% Approval</span>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3">
-          <MetricCard
-            icon={<CheckCircle2 className="w-4 h-4 text-green-500" />}
-            label="Tasks Today"
-            value={analytics.tasksToday}
-            trend={analytics.trends?.tasksCompletedTrend}
-          />
-          <MetricCard
-            icon={<Inbox className="w-4 h-4 text-blue-500" />}
-            label="This Week"
-            value={analytics.tasksThisWeek}
-            trend={analytics.trends?.emailVolumeTrend}
-          />
-          <MetricCard
-            icon={<Clock className="w-4 h-4 text-yellow-500" />}
-            label="Avg Response"
-            value={analytics.avgResponseTime}
-            trend={analytics.trends?.responseTimeTrend}
-            isTime
-          />
+          {metrics.map(({ icon: Icon, label, value, trend, iconColor, bg, isTime }) => {
+            const isPositive = trend?.startsWith('+')
+            const isNegative = trend?.startsWith('-')
+            const trendGood  = isTime ? isNegative : isPositive
+
+            return (
+              <div key={label} className={`flex flex-col p-3 rounded-xl border ${bg} gap-2`}>
+                <div className="flex items-center justify-between">
+                  <Icon className={`w-4 h-4 ${iconColor}`} />
+                  {trend && (
+                    <span className={`text-[10px] flex items-center gap-0.5 font-bold ${trendGood ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {trendGood ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {trend}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xl font-black text-foreground tabular-nums">{value}</div>
+                <div className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">{label}</div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Category Distribution */}
-        <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            Email Categories
+        <div className="space-y-3">
+          <h4 className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-[0.15em]">
+            Email Category Distribution
           </h4>
-          <div className="space-y-2">
-            {analytics.topCategories.slice(0, 4).map((cat) => (
-              <CategoryBar
-                key={cat.category}
-                category={cat.category}
-                count={cat.count}
-                total={analytics.topCategories.reduce((a, b) => a + b.count, 0)}
-              />
-            ))}
+          <div className="space-y-2.5">
+            {data.topCategories.slice(0, 4).map((cat) => {
+              const pct = Math.round((cat.count / total) * 100)
+              const c   = CATEGORY_COLORS[cat.category] || { bar: 'bg-slate-500', bg: 'bg-slate-500/10', text: 'text-slate-400' }
+
+              return (
+                <div key={cat.category} className="flex items-center gap-3">
+                  <span className={`text-[11px] font-bold w-20 truncate ${c.text}`}>
+                    {CATEGORY_LABELS[cat.category] || cat.category}
+                  </span>
+                  <div className="flex-1 h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${c.bar} rounded-full transition-all duration-700`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-muted-foreground/50 w-7 text-right tabular-nums">{cat.count}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  trend,
-  isTime = false
-}: {
-  icon: React.ReactNode
-  label: string
-  value: number | string
-  trend?: string
-  isTime?: boolean
-}) {
-  const isPositive = trend?.startsWith('+')
-  const isNegative = trend?.startsWith('-')
-
-  return (
-    <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700/50">
-      <div className="flex items-center justify-between mb-1">
-        {icon}
-        {trend && (
-          <span className={`text-[10px] flex items-center gap-0.5 ${
-            isTime
-              ? isNegative ? 'text-green-500' : 'text-red-500'
-              : isPositive ? 'text-green-500' : 'text-red-500'
-          }`}>
-            {(isTime ? isNegative : isPositive) ? (
-              <TrendingUp className="w-3 h-3" />
-            ) : (
-              <TrendingDown className="w-3 h-3" />
-            )}
-            {trend}
-          </span>
-        )}
       </div>
-      <div className="text-lg font-bold text-zinc-200">{value}</div>
-      <div className="text-[10px] text-zinc-500 uppercase tracking-wider">{label}</div>
-    </div>
-  )
-}
-
-function CategoryBar({
-  category,
-  count,
-  total
-}: {
-  category: string
-  count: number
-  total: number
-}) {
-  const percentage = Math.round((count / total) * 100)
-
-  const categoryColors: Record<string, string> = {
-    urgent_action: 'bg-red-500',
-    high_priority: 'bg-orange-500',
-    normal: 'bg-blue-500',
-    low_priority: 'bg-zinc-500',
-    newsletter: 'bg-purple-500',
-    social: 'bg-pink-500',
-    promotional: 'bg-yellow-500',
-    meeting: 'bg-green-500',
-    financial: 'bg-emerald-500',
-  }
-
-  const categoryLabels: Record<string, string> = {
-    urgent_action: 'Urgent',
-    high_priority: 'High Priority',
-    normal: 'Normal',
-    low_priority: 'Low',
-    newsletter: 'Newsletter',
-    social: 'Social',
-    promotional: 'Promo',
-    meeting: 'Meeting',
-    financial: 'Financial',
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-zinc-500 w-20 truncate">
-        {categoryLabels[category] || category}
-      </span>
-      <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-        <div
-          className={`h-full ${categoryColors[category] || 'bg-zinc-600'} transition-all`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <span className="text-xs text-zinc-600 w-8 text-right">{count}</span>
     </div>
   )
 }

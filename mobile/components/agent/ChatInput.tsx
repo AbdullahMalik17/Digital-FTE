@@ -82,12 +82,27 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   return (
-    <View className="flex-row items-center p-3 bg-card border-t border-border">
-      <View className="flex-1 flex-row items-center bg-secondary rounded-full px-4 py-2 mr-2">
+    <View style={{
+      flexDirection: 'row', alignItems: 'flex-end',
+      paddingHorizontal: 12, paddingVertical: 10,
+      backgroundColor: 'rgba(8,14,30,0.95)',
+      borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)',
+      gap: 8,
+    }}>
+      <View style={{
+        flex: 1, flexDirection: 'row', alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        borderWidth: 1, borderColor: isRecording ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)',
+        borderRadius: 22, paddingHorizontal: 16, paddingVertical: 6,
+        minHeight: 44,
+      }}>
         <TextInput
-          className="flex-1 text-foreground max-h-24 text-base"
-          placeholder={isRecording ? "Recording..." : "Message Abdullah Junior..."}
-          placeholderTextColor={isRecording ? "#EF4444" : "#94A3B8"}
+          style={{
+            flex: 1, color: '#f1f5f9', fontSize: 15, maxHeight: 120,
+            paddingVertical: 4,
+          }}
+          placeholder={isRecording ? 'Recording…' : 'Message Abdullah Junior…'}
+          placeholderTextColor={isRecording ? '#ef4444' : '#475569'}
           value={text}
           onChangeText={setText}
           multiline
@@ -95,29 +110,34 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           editable={!disabled && !isRecording}
         />
       </View>
-      
+
+      {/* Mic or Send button */}
       {text.trim() ? (
         <TouchableOpacity
           onPress={handleSend}
           disabled={disabled}
-          className="h-10 w-10 rounded-full items-center justify-center bg-primary"
+          style={{
+            width: 44, height: 44, borderRadius: 22,
+            backgroundColor: '#3b82f6',
+            justifyContent: 'center', alignItems: 'center',
+            shadowColor: '#3b82f6', shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+          }}
         >
-          <Send size={20} color="white" />
+          <Send size={18} color="white" />
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
           onPress={handleMicPress}
           disabled={disabled}
-          className={cn(
-            'h-10 w-10 rounded-full items-center justify-center',
-            isRecording ? 'bg-red-500' : 'bg-secondary'
-          )}
+          style={{
+            width: 44, height: 44, borderRadius: 22,
+            backgroundColor: isRecording ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.05)',
+            borderWidth: 1, borderColor: isRecording ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)',
+            justifyContent: 'center', alignItems: 'center',
+          }}
         >
-          {isRecording ? (
-            <Square size={20} color="white" />
-          ) : (
-            <Mic size={20} color="#94A3B8" />
-          )}
+          {isRecording ? <Square size={18} color="#ef4444" /> : <Mic size={18} color="#64748b" />}
         </TouchableOpacity>
       )}
     </View>

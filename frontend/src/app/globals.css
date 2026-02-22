@@ -28,26 +28,26 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
+    --background: 220 28% 5%;
+    --foreground: 210 20% 95%;
+    --card: 222 30% 7%;
+    --card-foreground: 210 20% 95%;
+    --popover: 222 30% 7%;
+    --popover-foreground: 210 20% 95%;
     --primary: 217 91% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 25% 10%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 223 47% 11%;
-    --muted-foreground: 218 11% 65%;
-    --accent: 216 34% 17%;
+    --muted: 220 25% 10%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 220 25% 13%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 224 76% 48%;
-    --sidebar-bg: 225 71% 5%;
+    --border: 220 25% 12%;
+    --input: 220 25% 12%;
+    --ring: 217 91% 60%;
+    --sidebar-bg: 222 30% 6%;
   }
 }
 
@@ -83,23 +83,68 @@
 @layer utilities {
   /* Enhanced Glassmorphism */
   .glass-card {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-300;
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-      0 2px 4px -1px rgba(0, 0, 0, 0.06),
-      inset 0 0 20px 0 rgba(255, 255, 255, 0.02);
+    @apply rounded-2xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xl transition-all duration-300;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .dark .glass-card {
-    @apply border-white/[0.08] bg-white/[0.02];
-    box-shadow: 
-      0 10px 15px -3px rgba(0, 0, 0, 0.4), 
-      0 4px 6px -2px rgba(0, 0, 0, 0.2),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    @apply border-white/[0.06] bg-white/[0.025];
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.5),
+      0 8px 16px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .glass-card-hover {
-    @apply hover:border-primary/30 hover:bg-white/[0.08] hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-0.5;
+    @apply hover:border-primary/30 hover:bg-white/[0.06] hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-0.5;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Premium gradient card */
+  .premium-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.05) 50%, rgba(14,165,233,0.08) 100%);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(20px);
+  }
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), rgba(139,92,246,0.5), transparent);
+  }
+
+  /* Neon glow border */
+  .neon-border {
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.3), 0 0 12px rgba(59,130,246,0.15), 0 0 30px rgba(59,130,246,0.05);
+  }
+
+  /* Mesh gradient overlay */
+  .mesh-bg {
+    background:
+      radial-gradient(at 20% 20%, hsla(217,91%,60%,0.12) 0px, transparent 60%),
+      radial-gradient(at 80% 10%, hsla(250,91%,60%,0.08) 0px, transparent 60%),
+      radial-gradient(at 50% 80%, hsla(200,80%,50%,0.06) 0px, transparent 60%);
+  }
+
+  /* Interactive button glow */
+  .btn-glow {
+    transition: all 0.2s ease;
+  }
+  .btn-glow:hover {
+    box-shadow: 0 0 20px rgba(59,130,246,0.4), 0 4px 15px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+  }
+  .btn-glow:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(59,130,246,0.2);
   }
 
   /* Glow effects */
@@ -179,6 +224,14 @@
   .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
 
+/* ── Custom Scrollbar ──────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+
 /* ── Animations ────────────────────────────────────────── */
 
 @keyframes fadeIn {
@@ -206,6 +259,37 @@
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; filter: blur(20px); }
+  50% { opacity: 0.8; filter: blur(30px); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
+.animate-scale-in { animation: scale-in 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
