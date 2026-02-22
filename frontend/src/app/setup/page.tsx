@@ -178,7 +178,7 @@ export default function SetupPage() {
 
   function next() {
     if (!isFirst && !isLast && 'steps' in step) {
-      setCompleted(prev => new Set([...prev, step.id]))
+      setCompleted(prev => new Set(Array.from(prev).concat(step.id)))
     }
     setCurrentStep(i => Math.min(i + 1, STEPS.length - 1))
   }
@@ -305,7 +305,7 @@ export default function SetupPage() {
             )}
 
             {/* Integration steps */}
-            {'steps' in step && step.id !== 'welcome' && step.id !== 'done' && (
+            {'steps' in step && (
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Setup Steps</h4>
                 <ol className="space-y-3">

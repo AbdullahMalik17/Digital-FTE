@@ -16,7 +16,7 @@ interface AnalyticsData extends Analytics {
 const MOCK_ANALYTICS: AnalyticsData = {
   tasksToday: 8,
   tasksThisWeek: 47,
-  avgResponseTime: 12,
+  avgResponseTime: '12',
   approvalRate: 94,
   topCategories: [
     { category: 'urgent_action',  count: 12 },

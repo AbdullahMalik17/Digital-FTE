@@ -5,8 +5,7 @@ import path from 'path'
 function parseEnvFile(filePath: string): Record<string, string> {
   if (!fs.existsSync(filePath)) return {}
   const vars: Record<string, string> = {}
-  fs.readFileSync(filePath, 'utf-8').split('
-').forEach(line => {
+  fs.readFileSync(filePath, 'utf-8').split('\n').forEach(line => {
     const m = line.match(/^([^#\s][^=]*)=(.*)$/)
     if (m) vars[m[1].trim()] = m[2].trim()
   })
