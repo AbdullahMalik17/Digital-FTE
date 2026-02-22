@@ -8,6 +8,7 @@ import { QuickActionChips } from '../../components/agent/QuickActionChips';
 import { AgentTypingIndicator } from '../../components/agent/AgentTypingIndicator';
 import { apiService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { Zap, WifiOff } from 'lucide-react-native';
 
 interface Message {
@@ -21,6 +22,14 @@ interface Message {
 export default function ChatScreen() {
   const { showToast } = useToast();
   const settings = useSettingsStore();
+
+  const flatListRef = useRef<FlatList>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([
+    'Check status', 'Pending approvals', 'Help',
+  ]);
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -30,8 +39,6 @@ export default function ChatScreen() {
       suggestions: ['Check status', 'Pending approvals', 'Help'],
     },
   ]);
-
-  // ... (rest of state)
 
   const handleSend = async (text: string) => {
     const userMsg: Message = {
@@ -51,11 +58,8 @@ export default function ChatScreen() {
           model: settings.openai.model,
           system_prompt: settings.openai.systemPrompt,
           temperature: settings.openai.temperature,
-          // We don't send the API key here for security unless specifically requested, 
-          // but we could if the backend is set up to receive it.
-          // For now, let's assume the backend has its own key or we'll send it if non-empty.
-          ...(settings.openai.apiKey ? { api_key: settings.openai.apiKey } : {})
-        }
+          ...(settings.openai.apiKey ? { api_key: settings.openai.apiKey } : {}),
+        },
       } : {};
 
       const response = await apiService.sendChatMessage(text, context);

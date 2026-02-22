@@ -27,7 +27,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       theme: 'dark',
-      apiBaseUrl: 'http://10.0.2.2:8000',
+      apiBaseUrl: 'https://abdullah-junior-api.fly.dev',
       notifications: {
         approvals: true,
         suggestions: true,

@@ -10,7 +10,7 @@ const AppConfig = {
   VERSION: '1.0.0',
 
   // Security
-  API_SECRET_KEY: '', // Set this in app settings or here for production
+  API_SECRET_KEY: 'f4ec4a01c65730bcaa04e3f22ffa3d34',
 };
 
 export default AppConfig;
