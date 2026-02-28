@@ -1,0 +1,51 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/python-ci.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-asyncio python-dotenv pydantic
+
+      - name: Create dummy .env for tests
+        run: |
+          cat > .env << 'EOF'
+          ODOO_URL=http://localhost:8069
+          ODOO_DB=test_db
+          ODOO_USERNAME=test@example.com
+          ODOO_PASSWORD=test_password
+          ODOO_MASTER_PASSWORD=test_master
+          LOG_LEVEL=INFO
+          VAULT_PATH=./Vault
+          EOF
+
+      - name: Run unit tests (no external dependencies)
+        run: |
+          pytest tests/test_config.py tests/test_persistence.py -v --tb=short
+        env:
+          WORK_ZONE: local
+          AGENT_ID: ci-agent
+          DRY_RUN: "true"

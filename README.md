@@ -2,9 +2,10 @@
 
 > **"Your life and business on autopilot. A self-evolving, cloud-native AI Employee that never sleeps."**
 
+[![Python CI](https://github.com/AbdullahMalik17/Digital-FTE/actions/workflows/python-ci.yml/badge.svg)](https://github.com/AbdullahMalik17/Digital-FTE/actions/workflows/python-ci.yml)
 [![Python](https://img.shields.io/badge/Python-79.6%25-blue?style=flat-square&logo=python)](https://github.com/AbdullahMalik17/Digital-FTE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-13%25-3178C6?style=flat-square&logo=typescript)](https://github.com/AbdullahMalik17/Digital-FTE)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Stars](https://img.shields.io/github/stars/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/stargazers)
 [![Commits](https://img.shields.io/github/commit-activity/m/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/commits/main)
 [![Built for Hackathon](https://img.shields.io/badge/Built%20for-AI%20Employee%20Hackathon%202026-purple?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE)
@@ -235,7 +236,7 @@ Agentic AI Developer | Full-Stack Engineer | Panaversity Agentic AI Program
 
 ## 📄 License
 
-This project is licensed under the MIT License — see [LICENSE.md](LICENSE.md) for details.
+This project is licensed under the MIT License.
 
 ---
 
