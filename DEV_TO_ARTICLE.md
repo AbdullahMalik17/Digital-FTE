@@ -2,7 +2,7 @@
 title: "I built a self-evolving AI Employee that manages my Gmail, invoices, and social media"
 published: false
 description: "How I built Abdullah Junior, a high-autonomy AI agent system that acts as a comprehensive Digital Employee."
-tags: "ai, python, agents, automation"
+tags: "ai, python, opensource, automation, agents"
 ---
 
 **Check out the open-source GitHub Repository:** [AbdullahMalik17/Digital-FTE](https://github.com/AbdullahMalik17/Digital-FTE) ⭐️ *(If you find this interesting, consider dropping a star!)*
@@ -58,6 +58,10 @@ pip install -r requirements.txt
 python src/local_agent.py
 ```
 
-I’d love to hear your thoughts or see what custom connectors you build for your own AI employee. Let's build a future where we do the creating, and the agents do the managing. 
+I’d love to hear your thoughts or see what custom connectors you build for your own AI employee. Let’s build a future where we do the creating, and the agents do the managing.
 
-*Drop a ⭐️ on [GitHub](https://github.com/AbdullahMalik17/Digital-FTE) if you'd like to support the project, or ask me any questions in the comments below!*
+*Drop a ⭐️ on [GitHub](https://github.com/AbdullahMalik17/Digital-FTE) if you’d like to support the project!*
+
+---
+
+**💬 What would you automate first if you had your own AI employee?** Drop it in the comments — I read every single one.
