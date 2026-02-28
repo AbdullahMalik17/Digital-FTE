@@ -2,6 +2,8 @@
 
 **"Your life and business on autopilot. Self-evolving, Cloud-native, and Secure."**
 
+![Demo Screenshot](Screenshot%202026-02-24%20200519.png)
+
 Abdullah Junior is a high-autonomy AI agent system designed to act as a comprehensive Digital Employee. It proactively manages personal and business affairs 24/7 using a sophisticated multi-agent architecture that combines the reliability of cloud monitoring with the security of local execution.
 
 ---
@@ -119,21 +121,32 @@ We maintain a strict testing protocol to ensure your business stays online:
 
 ---
 
-## 🚀 Deployment & Setup
+## ⚡ Quick Start (Under 5 Minutes)
 
-### 1. Environment Configuration
-Create a `config/.env` file with the following:
+Get Abdullah Junior up and running instantly.
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/AbdullahMalik17/Digital-FTE.git
+cd Digital-FTE
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Environment Configuration
+Create a `config/.env` file with your credentials (only fill what you need):
 *   `ODOO_URL`, `ODOO_USERNAME`, `ODOO_PASSWORD`
 *   `FACEBOOK_PAGE_ID`, `INSTAGRAM_ACCOUNT_ID`, `META_ACCESS_TOKEN`
 *   `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_BEARER_TOKEN`
 *   `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`
 
-### 2. Execution
+### 3. Execution (Launch the FTE)
 ```bash
 # Start the local environment
 python src/local_agent.py
 
-# Start the background watchers
+# In a separate terminal, start the background watchers
 python src/service_manager.py
 ```
 

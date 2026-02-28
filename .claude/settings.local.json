@@ -56,7 +56,11 @@
       "Bash(head:*)",
       "Bash(echo === TAB SCREENS SUMMARY ===:*)",
       "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && node -e \"\nconst fs = require\\('fs'\\);\nconst content = fs.readFileSync\\('components/ui/TabBar.tsx', 'utf8'\\);\n// Check imports exist\nconst checks = ['expo-blur', 'react-native-reanimated', 'expo-haptics'];\nchecks.forEach\\(pkg => {\n  const exists = fs.existsSync\\('node_modules/' + pkg\\);\n  console.log\\(pkg + ': ' + \\(exists ? 'OK' : 'MISSING'\\)\\);\n}\\);\n\" 2>&1)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(adb devices:*)",
+      "Bash(eas:*)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && npx expo whoami 2>&1)",
+      "Bash(cd \"/mnt/e/WEB DEVELOPMENT/Hacathan_2/mobile\" && npx eas update --channel preview --message \"fix: Fly backend connection + chatbot fix + markdown rendering\" --non-interactive 2>&1)"
     ]
   }
 }
