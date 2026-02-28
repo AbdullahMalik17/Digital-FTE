@@ -64,9 +64,32 @@ config/current_prompt.txt
 /config 
 config
 # Logs
+*.log
 Vault/Logs/*.json
 Vault/Logs/*.log
 Vault/Needs_Action/ALERT_*.md
+
+# Large binaries / build artifacts
+*.zip
+ffmpeg*/
+platform-tools/
+
+# Test output / exports
+*.csv
+test_audit_export.csv
+gold_tier_results*.txt
+gold_tier_validation_output.txt
+tests/__pycache__/
+pip_install.log
+
+# Screenshots / media in root
+Screenshot*.png
+reduce_video.py
+
+# Temp / local scripts
+launch_demo.sh
+start_demo.sh
+test_demo_pages.js
 
 # OS files
 .DS_Store
