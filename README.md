@@ -1,153 +1,242 @@
-# Abdullah Junior: The Elite Digital FTE (Full-Time Equivalent)
+# 🤖 Digital-FTE — Abdullah Junior
 
-**"Your life and business on autopilot. Self-evolving, Cloud-native, and Secure."**
+> **"Your life and business on autopilot. A self-evolving, cloud-native AI Employee that never sleeps."**
 
-![Demo Screenshot](Screenshot%202026-02-24%20200519.png)
-
-Abdullah Junior is a high-autonomy AI agent system designed to act as a comprehensive Digital Employee. It proactively manages personal and business affairs 24/7 using a sophisticated multi-agent architecture that combines the reliability of cloud monitoring with the security of local execution.
-
----
-
-## 🏗 System Architecture & Design
-
-The system is built on a **Dual-Agent Architecture** to balance 24/7 availability with absolute security.
-
-### 1. Cloud Agent (The "Sentry")
-*   **Role:** Continuous Monitoring & Draft Generation.
-*   **Permissions:** Read-only access to communications; No access to financial credentials or high-stakes writing.
-*   **Workflow:** Watches Gmail, WhatsApp, and LinkedIn. When a trigger is detected (e.g., an inquiry), it uses AI to draft a response or task and saves it to the synchronized Vault.
-*   **Source:** `src/cloud_agent.py`
-
-### 2. Local Agent (The "Executive")
-*   **Role:** Secure Execution & Approval Management.
-*   **Permissions:** Full access to Odoo (Accounting), Social Media APIs (Posting), and sensitive local files.
-*   **Workflow:** Syncs with the Cloud Agent's drafts. It notifies the user for approval and then executes the action using its local MCP servers.
-*   **Source:** `src/local_agent.py`
-
-### 3. The Orchestrator
-*   **Role:** The "Brain" of the system.
-*   **Logic:** Classifies tasks, selects the most efficient AI model (Gemini 1.5 Pro, Claude 3.5, etc.), and coordinates between different MCP servers to fulfill complex requests.
-*   **Source:** `src/orchestrator.py`
+[![Python](https://img.shields.io/badge/Python-79.6%25-blue?style=flat-square&logo=python)](https://github.com/AbdullahMalik17/Digital-FTE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-13%25-3178C6?style=flat-square&logo=typescript)](https://github.com/AbdullahMalik17/Digital-FTE)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE.md)
+[![Stars](https://img.shields.io/github/stars/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/stargazers)
+[![Commits](https://img.shields.io/github/commit-activity/m/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/commits/main)
+[![Built for Hackathon](https://img.shields.io/badge/Built%20for-AI%20Employee%20Hackathon%202026-purple?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE)
 
 ---
 
-## 🎨 Design & Workflow (The "Digital FTE Loop")
+## 🎬 What Is This?
 
-The system operates through a Git-synced **Obsidian Vault**, acting as its central nervous system.
+**Digital-FTE** is an open-source autonomous AI agent system that acts as a 24/7 Digital Employee for your personal life and business. It watches your Gmail, WhatsApp, and LinkedIn — drafts replies, creates invoices, posts to social media, and executes tasks — all with **human approval** before any action is taken.
 
-```mermaid
-graph TD
-    A[Communication Received] -->|Watcher| B(Cloud Agent)
-    B -->|AI Reasoning| C[Draft Markdown in Vault]
-    C -->|Git Sync| D(Local Agent)
-    D -->|Notify User| E{Human Approval}
-    E -->|Approved| F[MCP Execution]
-    E -->|Modified| F
-    F -->|Result| G[Archive to Done]
+It uses a **Dual-Agent Architecture** (Cloud Sentry + Local Executive) connected by an **Obsidian Vault** as its central nervous system. The system can also **debug and evolve itself** — making it one of the first self-evolving AI employee implementations in open source.
+
+```
+📬 Email Arrives → 🤖 Cloud Agent Drafts Reply → 📂 Saved to Vault
+→ 📱 You Approve on Phone → ⚡ Local Agent Executes → ✅ Done
 ```
 
-### Step-by-Step Working:
-1.  **Detection:** Watchers poll Gmail (IMAP), WhatsApp (Web), and LinkedIn (API) every 60 seconds.
-2.  **Contextualization:** The Cloud Agent pulls the relevant history from the Vault to understand the relationship with the sender.
-3.  **Drafting:** A proposal is written into `Vault/Needs_Action/` containing the suggested reply and any technical steps (e.g., "Create invoice for $500").
-4.  **Review:** You open Obsidian on your phone or laptop to see the draft.
-5.  **Execution:** The Local Agent detects your approval and performs the actual API calls.
+---
+
+## ✨ Key Features
+
+- **📧 Gmail Watcher** — Monitors inbox, categorizes emails, drafts context-aware replies
+- **🏢 Odoo Accounting** — Auto-creates invoices, logs expenses from email receipts
+- **📱 Social Media Autopilot** — Posts to Facebook, Instagram, Twitter/X with analytics
+- **🧠 Smart Orchestrator** — Routes tasks to the best AI model (Claude 3.5, Gemini 1.5 Pro, etc.)
+- **🔐 Human-in-the-Loop** — Nothing executes without your approval. Ever.
+- **🔄 Self-Evolution Engine** — Catches its own errors and writes its own patches
+- **📂 Obsidian Vault Sync** — Git-synced knowledge base as the system's memory
+- **🐳 Docker Ready** — One command deployment with docker-compose
+- **🧪 Full Test Suite** — Unit, integration, and E2E tests included
 
 ---
 
-## 📂 Vault: The Knowledge Base
+## 🏗️ Architecture
 
-Your Obsidian Vault is organized by task state:
+The system runs two agents in parallel:
 
-| Folder | Description |
-| :--- | :--- |
-| `Needs_Action/` | New triggers awaiting the agent's initial draft. |
-| `Pending_Approval/` | Drafted tasks waiting for your "OK" to execute. |
-| `In_Progress/` | Tasks currently being processed by the Local Agent. |
-| `Done/` | Perpetual archive of every interaction and action taken. |
-| `Logs/Audit/` | JSONL logs of every tool call, model prompt, and response. |
-| `Plans/` | Long-term strategic goal breakdowns (e.g., "Launch Q1 Campaign"). |
+### ☁️ Cloud Agent (The "Sentry")
+- **Lives:** On any cloud server or always-on machine
+- **Watches:** Gmail (IMAP), LinkedIn API, WhatsApp Web
+- **Does:** Reads incoming messages, drafts responses using AI, writes proposals to the Vault
+- **Cannot:** Access financial credentials or execute anything — read-only by design
 
----
+### 💻 Local Agent (The "Executive")
+- **Lives:** On your personal machine
+- **Syncs:** Git-pulls the Vault every 60 seconds
+- **Does:** Notifies you of pending tasks, waits for your approval, then executes via MCP servers
+- **Has access to:** Odoo, social media APIs, local files, sensitive credentials
 
-## 🔌 Core Integrations (MCP Servers)
+### 🧠 The Orchestrator
+The brain that routes every task to the right tool and AI model based on complexity and cost.
 
-Abdullah Junior uses **Model Context Protocol (MCP)** to interact with specialized services:
-
-### 🏢 Odoo (Business Accounting)
-*   **Module:** `src/mcp_servers/odoo_server.py`
-*   **Tools:** 
-    *   `create_customer_invoice`: Generates professional PDFs and sends them to clients.
-    *   `record_vendor_bill`: Automatically extracts data from email receipts and logs expenses.
-    *   `get_financial_summary`: Provides real-time Revenue/Expense/Margin reports.
-    *   `list_products`: Searches your inventory for pricing and availability.
-
-### 📧 Gmail (Official API)
-*   **Module:** `src/watchers/gmail_watcher.py` & `src/integrations/email_categorizer.py`
-*   **Features:** Intelligent spam filtering, automatic labeling, and drafting context-aware replies.
-*   **Privacy:** Ignores any thread with the `NO_AI` label.
-
-### 📱 Social Media Empire
-*   **Meta (Facebook & Instagram):** `src/mcp_servers/meta_social_connector.py`
-    *   Post updates with images/links.
-    *   Fetch engagement analytics (likes, shares, reach).
-    *   Automated hashtag generation based on image content.
-*   **Twitter/X:** `src/mcp_servers/twitter_connector.py`
-    *   Post single tweets or complex 10+ tweet threads.
-    *   Monitor mentions and auto-draft engagement replies.
-    *   Fetch profile performance metrics.
+```
+┌─────────────────────────────────────────────────┐
+│                  DIGITAL FTE LOOP               │
+│                                                 │
+│  📬 Input → ☁️ Cloud Agent → 📂 Vault (Git)     │
+│                                  ↓              │
+│            ✅ You Approve → 💻 Local Agent       │
+│                                  ↓              │
+│         ⚡ MCP Execution → 📁 Archive to Done   │
+└─────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🌟 Self-Evolution Engine
+## 🔌 Integrations (via MCP Servers)
 
-This project features the **World's First Self-Evolving AI Employee**. 
-- **Autonomous Debugging:** If a script fails, the Guardian system captures the traceback and asks the AI to write a patch.
-- **Skill Acquisition:** The system can "study" its own `src/` directory to understand how to write new MCP connectors.
-- **Performance Tuning:** Analyzes `Vault/Logs/` to identify which AI models are most cost-effective for specific task types.
-
----
-
-## 🧪 Testing & Validation
-
-We maintain a strict testing protocol to ensure your business stays online:
-
-| Test Type | Command | Description |
-| :--- | :--- | :--- |
-| **Full Suite** | `pytest tests/` | Runs all unit and integration tests. |
-| **Odoo Sync** | `pytest tests/test_odoo_integration.py` | Verifies XML-RPC connection and invoice creation. |
-| **Social Media** | `pytest tests/test_social_media_apis.py` | Validates Meta and Twitter API tokens. |
-| **E2E Gold** | `pytest tests/e2e_gold_phase_test.py` | Simulates a full Gmail -> Odoo -> WhatsApp flow. |
+| Service | What It Does |
+|---|---|
+| **Gmail** | Reads, categorizes, drafts context-aware replies |
+| **Odoo** | Creates invoices, logs vendor bills, financial summaries |
+| **Facebook / Instagram** | Posts content, fetches engagement analytics |
+| **Twitter / X** | Posts tweets/threads, monitors mentions |
+| **WhatsApp** | Reads messages, drafts replies |
+| **Playwright** | Browser automation for web tasks |
 
 ---
 
-## ⚡ Quick Start (Under 5 Minutes)
+## 🚀 Quick Start
 
-Get Abdullah Junior up and running instantly.
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- Docker (optional but recommended)
+- An Obsidian vault (for the Vault sync)
 
-### 1. Clone & Install
+### 1. Clone the repo
 ```bash
 git clone https://github.com/AbdullahMalik17/Digital-FTE.git
 cd Digital-FTE
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+### 2. Install dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Environment Configuration
-Create a `config/.env` file with your credentials (only fill what you need):
-*   `ODOO_URL`, `ODOO_USERNAME`, `ODOO_PASSWORD`
-*   `FACEBOOK_PAGE_ID`, `INSTAGRAM_ACCOUNT_ID`, `META_ACCESS_TOKEN`
-*   `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_BEARER_TOKEN`
-*   `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`
-
-### 3. Execution (Launch the FTE)
+### 3. Configure environment
 ```bash
-# Start the local environment
+cp .env.example .env
+# Fill in your API keys (see Configuration section below)
+```
+
+### 4. Start the system
+```bash
+# Start the local agent
 python src/local_agent.py
 
-# In a separate terminal, start the background watchers
+# In a separate terminal, start the watchers
 python src/service_manager.py
 ```
 
-*Built for the 2026 AI Employee Hackathon. Autonomous. Secure. Robust.*
+### 5. (Optional) Docker deployment
+```bash
+docker-compose up --build
+```
+
+---
+
+## ⚙️ Configuration
+
+Edit your `.env` file with the following:
+
+```env
+# AI Models
+OPENAI_API_KEY=your_key
+ANTHROPIC_API_KEY=your_key
+GOOGLE_API_KEY=your_key
+
+# Gmail
+GMAIL_CLIENT_ID=your_id
+GMAIL_CLIENT_SECRET=your_secret
+
+# Odoo (Accounting)
+ODOO_URL=https://your-odoo-instance.com
+ODOO_USERNAME=your_email
+ODOO_PASSWORD=your_password
+
+# Social Media
+META_ACCESS_TOKEN=your_token
+FACEBOOK_PAGE_ID=your_page_id
+INSTAGRAM_ACCOUNT_ID=your_account_id
+TWITTER_API_KEY=your_key
+TWITTER_API_SECRET=your_secret
+TWITTER_BEARER_TOKEN=your_token
+```
+
+---
+
+## 📂 Vault Structure
+
+Your Obsidian Vault is organized by task state:
+
+| Folder | Purpose |
+|---|---|
+| `Needs_Action/` | New incoming triggers awaiting AI draft |
+| `Pending_Approval/` | Drafted tasks waiting for your approval |
+| `In_Progress/` | Tasks being actively executed |
+| `Done/` | Permanent archive of every completed action |
+| `Logs/Audit/` | Full JSONL audit trail of every AI call |
+| `Plans/` | Long-term strategic goals and breakdowns |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run full test suite
+pytest tests/
+
+# Individual test modules
+pytest tests/test_odoo_integration.py      # Odoo connection + invoices
+pytest tests/test_social_media_apis.py    # Meta + Twitter API tokens
+pytest tests/e2e_gold_phase_test.py       # Full Gmail → Odoo → WhatsApp flow
+```
+
+---
+
+## 🌱 Self-Evolution Engine
+
+One of the most unique features of Digital-FTE is its **Guardian system**:
+
+1. If any script fails, the traceback is automatically captured
+2. The Guardian sends the error + context to the AI
+3. The AI writes a patch and proposes it in the Vault
+4. You approve → the patch is applied automatically
+
+This means the system gets smarter and more stable over time with minimal manual intervention.
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] WhatsApp Business API (replacing Web scraping)
+- [ ] Voice interface integration
+- [ ] Multi-user support (team FTE)
+- [ ] LangFuse observability dashboard
+- [ ] Mobile app for approvals (React Native)
+- [ ] Plugin marketplace for custom MCP connectors
+
+---
+
+## 🤝 Contributing
+
+Contributions are very welcome! This is an actively maintained open-source project.
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push and open a Pull Request
+
+Please open an issue first for major changes so we can discuss direction.
+
+---
+
+## 👨💻 Author
+
+**Muhammad Abdullah Athar** (AbdullahMalik17)  
+Agentic AI Developer | Full-Stack Engineer | Panaversity Agentic AI Program  
+📍 Bahawalpur, Pakistan
+
+- 🌐 [Portfolio](https://portfolio-ai-assistant-of-malik.vercel.app/)
+- 💼 [LinkedIn](https://www.linkedin.com/in/muhammad-abdullah-athar)
+- 📧 [muhammadabdullah51700@gmail.com](mailto:muhammadabdullah51700@gmail.com)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see [LICENSE.md](LICENSE.md) for details.
+
+---
+
+⭐ **If this project inspires you or saves you time, please give it a star — it helps more developers discover it!**
