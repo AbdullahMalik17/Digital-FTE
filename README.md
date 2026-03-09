@@ -1,5 +1,7 @@
 # 🤖 Digital-FTE — Abdullah Junior
 
+![Digital-FTE Banner](./digital-fte-banner.png)
+
 > **"Your life and business on autopilot. A self-evolving, cloud-native AI Employee that never sleeps."**
 
 [![Python CI](https://github.com/AbdullahMalik17/Digital-FTE/actions/workflows/python-ci.yml/badge.svg)](https://github.com/AbdullahMalik17/Digital-FTE/actions/workflows/python-ci.yml)
