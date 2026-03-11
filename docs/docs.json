@@ -5,19 +5,8 @@
   "colors": {
     "primary": "#00D4FF"
   },
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": ["overview", "quickstart"]
-    },
-    {
-      "group": "Architecture",
-      "pages": ["architecture"]
-    },
-    {
-      "group": "Contributing",
-      "pages": ["good-first-issues"]
-    }
-  ]
+  "navigation": {
+    "pages": ["overview", "quickstart", "architecture", "good-first-issues"]
+  }
 }
 

@@ -33,8 +33,8 @@ Five feature specifications have been created following SpecifyPlus structure. E
 
 **Success Criteria**:
 - 99% uptime
-- <30 second startup
-- Auto-recovery in <60 seconds
+- &lt;30 second startup
+- Auto-recovery in &lt;60 seconds
 
 ---
 
@@ -51,7 +51,7 @@ Five feature specifications have been created following SpecifyPlus structure. E
 
 **Success Criteria**:
 - 100% delivery accuracy
-- <5 second send latency
+- &lt;5 second send latency
 - Zero unintended sends
 
 ---
@@ -69,7 +69,7 @@ Five feature specifications have been created following SpecifyPlus structure. E
 - US4 (P1): Safety (never auto-delete)
 
 **Success Criteria**:
-- <10 second latency
+- &lt;10 second latency
 - 100% deduplication
 - Zero unintended deletions
 
@@ -89,7 +89,7 @@ Five feature specifications have been created following SpecifyPlus structure. E
 
 **Success Criteria**:
 - 100% metric accuracy
-- <5 minute generation
+- &lt;5 minute generation
 - Professional quality output
 
 ---
@@ -107,7 +107,7 @@ Five feature specifications have been created following SpecifyPlus structure. E
 - US4 (P2): Escalate sensitive messages
 
 **Success Criteria**:
-- <30 second detection
+- &lt;30 second detection
 - 100% contact classification
 - Zero inappropriate replies
 

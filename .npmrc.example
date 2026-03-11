@@ -1,0 +1,8 @@
+# Example npm config (safe to commit)
+# Copy to `.npmrc` (kept gitignored) and set NPM_TOKEN in your environment.
+#
+# PowerShell:
+#   $env:NPM_TOKEN="YOUR_TOKEN"
+#
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
+

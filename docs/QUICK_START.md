@@ -173,8 +173,8 @@ Measurable metrics to validate the feature works:
 
 ```
 SC-001: 99% uptime
-SC-002: <30 second startup
-SC-003: <60 second auto-recovery
+SC-002: &lt;30 second startup
+SC-003: &lt;60 second auto-recovery
 ```
 
 ---
@@ -217,8 +217,8 @@ These specs follow **SpecifyPlus** best practices:
 After implementation of Sprint 1, you should have:
 
 ```
-✅ Laptop auto-starts on login (99% uptime, <30 second startup)
-✅ Email sending works via MCP (100% delivery, <5 second latency)
+✅ Laptop auto-starts on login (99% uptime, &lt;30 second startup)
+✅ Email sending works via MCP (100% delivery, &lt;5 second latency)
 ✅ All actions logged for audit trail
 ✅ Full perception→reasoning→action workflow operational
 ```
