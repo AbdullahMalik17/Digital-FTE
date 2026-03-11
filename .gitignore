@@ -63,11 +63,30 @@ config/hook_state.json
 config/current_prompt.txt
 /config 
 config
+
+# Vault data - Sensitive personal content
+Vault/Done/*
+Vault/Pending_Approval/*
+Vault/Needs_Action/*
+Vault/In_Progress/*
+Vault/Approved/*
+Vault/Archive/*
+Vault/Drafts/*
+Vault/Inbox/*
+Vault/Dead_Letter_Queue/*
+Vault/Updates/*
+Vault/WhatsApp_Queue/*
+Vault/LinkedIn_Queue/*
+Vault/Logs/*
+Vault/Data/*
+!Vault/**/.gitkeep
+!Vault/Company_Handbook.md
+!Vault/CEO_Briefing_2026-01-16.md
+!Vault/Dashboard.md
+!Vault/Dashboard_Data.json
+
 # Logs
 *.log
-Vault/Logs/*.json
-Vault/Logs/*.log
-Vault/Needs_Action/ALERT_*.md
 
 # Large binaries / build artifacts
 *.zip
@@ -95,6 +114,7 @@ test_demo_pages.js
 .DS_Store
 Thumbs.db
 nul
+.npmrc
 
 # Test coverage
 htmlcov/
@@ -116,7 +136,29 @@ coverage.xml
 .serena/memories/
 config/linkedin_data/
 
+# Mobile specific sensitive files
+mobile/google-services.json
+mobile/GoogleService-Info.plist
+mobile/.env
+mobile/.env.local
+mobile/android/app/google-services.json
+mobile/ios/GoogleService-Info.plist
+
 # Frontend
 frontend/node_modules/
 frontend/.next/
+frontend/.vercel/
 node_modules/
+
+# Local/IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary/Cache
+.pytest_cache/
+.serena/cache/
+.specify/memory/
+__pycache__/
