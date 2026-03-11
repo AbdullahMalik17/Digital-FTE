@@ -1,0 +1,42 @@
+---
+title: Quickstart
+---
+
+## Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- Docker (optional)
+- An Obsidian vault for the shared memory
+
+## 1. Clone and install
+
+```bash
+git clone https://github.com/AbdullahMalik17/Digital-FTE.git
+cd Digital-FTE
+pip install -r requirements.txt
+```
+
+## 2. Configure environment
+
+```bash
+cp .env.example .env
+# Fill in your API keys for AI models, Gmail, Odoo, and social media
+```
+
+## 3. Run the agents
+
+```bash
+# Local executive agent
+python src/local_agent.py
+
+# In another terminal, start the watchers
+python src/service_manager.py
+```
+
+For Docker users, you can instead run:
+
+```bash
+docker-compose up --build
+```
+

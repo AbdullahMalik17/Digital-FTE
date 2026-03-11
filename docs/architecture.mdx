@@ -1,0 +1,23 @@
+---
+title: Architecture
+---
+
+## Dual-agent architecture
+
+Digital-FTE runs two cooperating agents:
+
+- **Cloud Agent (Sentry)** – lives on a cloud VM; watches Gmail, LinkedIn, WhatsApp Web, etc.; drafts replies and tasks into the Vault; kept as read-only as possible.
+- **Local Agent (Executive)** – lives on your machine; pulls changes from the Vault; asks for approval; then executes via MCP servers with access to APIs and local resources.
+
+An **Orchestrator** routes every task to the right model and tool based on complexity, cost, and safety.
+
+```text
+📬 Input → ☁️ Cloud Agent → 📂 Vault (Git)
+                      ↓
+          ✅ You Approve → 💻 Local Agent
+                      ↓
+             ⚡ MCP Execution → 📁 Done + Logs
+```
+
+This separation keeps credentials local, makes actions auditable, and still gives you an always-on AI employee.
+
