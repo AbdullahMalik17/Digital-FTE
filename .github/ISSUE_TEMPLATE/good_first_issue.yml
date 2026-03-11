@@ -1,0 +1,56 @@
+name: Good first issue
+about: Create a small, beginner-friendly task for new contributors
+title: '[GFI] '
+labels: ['good first issue']
+assignees: ''
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping new contributors get started!
+
+        Tip: keep this issue small (1–3 hours), well-scoped, and easy to verify.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should be changed? Keep it clear and short.
+      placeholder: Example: Add an example Obsidian Vault template under examples/obsidian-vault/
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Why this matters
+      description: How does this improve Digital-FTE for users or contributors?
+      placeholder: Example: New users can start faster without designing the Vault structure.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Suggested steps
+      description: A checklist of what to do (implementation plan).
+      placeholder: |
+        - [ ] Create folder structure under examples/obsidian-vault/
+        - [ ] Add a short README explaining each folder
+        - [ ] Link it from main README
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How do we know this issue is done?
+      placeholder: |
+        - A new user can follow the steps without guessing
+        - Docs are updated
+        - No secrets or credentials added
+    validations:
+      required: true
+

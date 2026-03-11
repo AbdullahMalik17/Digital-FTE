@@ -12,6 +12,8 @@
 [![Commits](https://img.shields.io/github/commit-activity/m/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/commits/main)
 [![Built for Hackathon](https://img.shields.io/badge/Built%20for-AI%20Employee%20Hackathon%202026-purple?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE)
 
+- **Docs**: Run `npx mintlify dev docs` (see `docs/README.md`) and add your deployed docs URL here.
+
 ---
 
 ## 🎬 What Is This?

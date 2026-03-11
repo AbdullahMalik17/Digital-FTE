@@ -5,12 +5,16 @@ First of all, thank you for your interest in contributing! It's people like you 
 ## How Can I Contribute?
 
 ### Reporting Bugs
-- Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md).
+- Use the **Bug Report** issue template in GitHub (`.github/ISSUE_TEMPLATE/bug_report.yml`).
 - Provide as much detail as possible: steps to reproduce, environment, logs, etc.
 
 ### Suggesting Enhancements
-- Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md).
+- Use the **Feature Request** issue template in GitHub (`.github/ISSUE_TEMPLATE/feature_request.yml`).
 - Clearly describe the benefit and use case.
+
+### Good First Issues (for new contributors)
+- Look for issues labeled **`good first issue`**.
+- If you're a maintainer, create issues using the **Good First Issue** template (`.github/ISSUE_TEMPLATE/good_first_issue.yml`).
 
 ### Pull Requests
 1. Fork the repository and create your branch from `main`.
