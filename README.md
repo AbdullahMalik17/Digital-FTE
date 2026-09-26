@@ -10,6 +10,10 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Stars](https://img.shields.io/github/stars/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/stargazers)
 [![Commits](https://img.shields.io/github/commit-activity/m/AbdullahMalik17/Digital-FTE?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE/commits/main)
+[![Security: A · Skills Directory](https://www.skillsdirectory.com/api/skills/abdullahmalik17-digital-fte-orchestrator/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-digital-fte-orchestrator)
+[![Skills Directory Author](https://img.shields.io/badge/Skills%20Directory-12%20Skills%20(Grade%20A)-10b981?style=flat-square&logo=claude&logoColor=white)](https://skillsdirectory.com/authors/abdullahmalik17)
+[![Snyk Security](https://snyk.io/test/github/AbdullahMalik17/Digital-FTE/badge.svg)](https://snyk.io/test/github/AbdullahMalik17/Digital-FTE)
+[![Badges Registry](https://img.shields.io/badge/Badges%20Registry-37%20Found-blueviolet?style=flat-square)](./BADGES.md)
 [![Built for Hackathon](https://img.shields.io/badge/Built%20for-AI%20Employee%20Hackathon%202026-purple?style=flat-square)](https://github.com/AbdullahMalik17/Digital-FTE)
 
 - **Docs**: Run `npx mintlify dev docs` (see `docs/README.md`) and add your deployed docs URL here.
@@ -45,6 +49,8 @@ It uses a **Dual-Agent Architecture** (Cloud Sentry + Local Executive) connected
 
 ## 🏗️ Architecture
 
+📖 **Detailed Technical Architecture & Multi-Agent Map:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 The system runs two agents in parallel:
 
 ### ☁️ Cloud Agent (The "Sentry")
@@ -76,16 +82,24 @@ The brain that routes every task to the right tool and AI model based on complex
 
 ---
 
-## 🔌 Integrations (via MCP Servers)
+## 🔌 Integrations & Verified Agent Skills (via MCP)
 
-| Service | What It Does |
-|---|---|
-| **Gmail** | Reads, categorizes, drafts context-aware replies |
-| **Odoo** | Creates invoices, logs vendor bills, financial summaries |
-| **Facebook / Instagram** | Posts content, fetches engagement analytics |
-| **Twitter / X** | Posts tweets/threads, monitors mentions |
-| **WhatsApp** | Reads messages, drafts replies |
-| **Playwright** | Browser automation for web tasks |
+| Service / Agent Skill | What It Does | Skills Directory Security |
+|---|---|:---:|
+| **Digital FTE Orchestrator** | Main task processing loop & autonomous supervisor | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-digital-fte-orchestrator/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-digital-fte-orchestrator) |
+| **Gmail Watcher** | Reads, categorizes, drafts context-aware replies | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-watching-gmail/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-watching-gmail) |
+| **WhatsApp Monitor** | Watches WhatsApp Web & processes incoming tasks | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-watching-whatsapp/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-watching-whatsapp) |
+| **LinkedIn Poster** | Posts content & manages schedule via Playwright | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-posting-linkedin/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-posting-linkedin) |
+| **Twitter / X Poster** | Posts tweets/threads & monitors mentions via API v2 | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-posting-twitter/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-posting-twitter) |
+| **Facebook Poster** | Publishes posts & fetches analytics via Meta Graph API | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-posting-facebook/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-posting-facebook) |
+| **Instagram Poster** | Publishes media posts & stories via Meta Graph API | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-posting-instagram/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-posting-instagram) |
+| **Calendar Manager** | Schedules meetings & verifies availability via Google Calendar | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-managing-calendar/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-managing-calendar) |
+| **Service Supervisor** | Manages background watchers as supervised child processes | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-managing-services/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-managing-services) |
+| **Filesystem Watcher** | Monitors local vault drop folders for new incoming items | [![Security: A](https://www.skillsdirectory.com/api/skills/abdullahmalik17-watching-filesystem/badge)](https://www.skillsdirectory.com/skills/abdullahmalik17-watching-filesystem) |
+| **Odoo ERP** | Creates invoices, logs vendor bills, financial summaries | [![Built for Hackathon](https://img.shields.io/badge/Status-Integrated-blue?style=flat-square)](#) |
+| **Playwright Automation** | Headless browser execution for web actions | [![Built for Hackathon](https://img.shields.io/badge/Status-Integrated-blue?style=flat-square)](#) |
+
+> 🛡️ *All 12 agent skills authored by AbdullahMalik17 have been independently audited and verified with **Grade A** security on [Skills Directory](https://skillsdirectory.com/authors/abdullahmalik17).* Check [BADGES.md](./BADGES.md) for the complete multi-project badge registry.
 
 ---
 
